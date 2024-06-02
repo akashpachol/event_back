@@ -19,14 +19,16 @@ export default function adminAuthController(
     const handleAdminLogin = async (req: Request, res: Response, next: NextFunction) => {
         const {email, password} = req.body
 
-        const token = await adminLogin(
+          const { token, user,userId } = await adminLogin(
             email,
             password,
             services,
             dbRepositoryUser
         )
 
-        res.status(HttpStatus.OK).json({status: 'success', message: 'Admin has been logged in succesfull', data:{access : token, refresh: ""}})
+        res.status(HttpStatus.OK).json({status: 'success', message: 'Admin has been logged in succesfull', token,
+            admin:user,
+            adminId:userId})
     }
 
 

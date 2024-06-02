@@ -26,6 +26,8 @@ export const userRepositoryMongoDB = () => {
       
       return newUser;
     };
+
+    const getAllUsers = async () => await User.find();
   
     const addGoogleUser = async (user: UserEntityType) => {
    
@@ -86,7 +88,8 @@ export const userRepositoryMongoDB = () => {
       addGoogleUser,
       getUserById,
       updateUserByProperty,
-      changeProfileImg
+      changeProfileImg,
+      getAllUsers
     };
   };
   

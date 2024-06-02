@@ -33,7 +33,7 @@ export const adminLogin = async (email: string, password: string, services:Retur
   
       const token = services.generateTokenValue(user._id.toString());
 
-    return token
+    return { token, user: user?.username,userId:user._id };
 
 
 }

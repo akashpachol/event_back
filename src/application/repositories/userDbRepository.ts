@@ -21,7 +21,7 @@ export const userDbRepository = (
    return  await repository.addGoogleUser(user);
   }
   
-
+  const getAllUsersValue = async () => repository.getAllUsers();
   const getUserByIdValue = async (id: string) => await repository.getUserById(id)
   const updateUserByPropertyValue =async (id:string, update: object) => await repository.updateUserByProperty(id, update)
   const changeProfileImgValue = async (id:string, url: string) => await repository.changeProfileImg(id, url);
@@ -32,7 +32,8 @@ export const userDbRepository = (
     getUserByIdValue,
     updateUserByPropertyValue,
     addGoogleUserValue,
-    changeProfileImgValue
+    changeProfileImgValue,
+    getAllUsersValue
   };
 };
 

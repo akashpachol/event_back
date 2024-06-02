@@ -2,7 +2,7 @@ import { HttpStatus } from "../../../types/httpStatus";
 
 import AppError from "../../../utils/appError";
 import { UserDbInterface } from "../../repositories/userDbRepository";
-import  { UserEntityType } from "../../../entities/user";
+
 
 
 
@@ -55,13 +55,13 @@ export const getUserProfile = async (
     }
   
     const user = await userRepository.updateUserByPropertyValue(id, updates);
-    // const data = removePasswordField(user);
+    const data = removePasswordField(user);
   
-    if (!user) {
+    if (!data) {
       throw new AppError("User Dose not exist", HttpStatus.UNAUTHORIZED);
     }
   
-    return user;
+    return data;
   };
 
   export const updateProfileImg = async (id:string, url: string, repository:ReturnType<UserDbInterface>) =>{
@@ -74,3 +74,42 @@ export const getUserProfile = async (
   
   }
 
+
+  export const getAllUsers =async ( userRepository : ReturnType<UserDbInterface>) => {
+    const users = await userRepository.getAllUsersValue()
+
+    const data =  users.map( user => removePasswordField(user))
+    
+    return data
+}
+
+export const blockuser =async (    userId: string, userRepository : ReturnType<UserDbInterface>) => {
+
+
+
+  if(!userId){
+    throw new AppError('Somthing went wrong please log in again', HttpStatus.UNAUTHORIZED)
+}
+const user  = await userRepository.getUserByIdValue(userId);
+
+if(!user){
+    throw new AppError('User Dose not exist', HttpStatus.UNAUTHORIZED)
+}
+if(!user.isBlocked){
+  let updates={isBlocked:true}
+  const user = await userRepository.updateUserByPropertyValue(userId, updates);
+  let data= removePasswordField(user)
+  
+  return {data,message:'user blocked succesfully'}
+}else{
+  let updates={isBlocked:false}
+  const user = await userRepository.updateUserByPropertyValue(userId, updates);
+  let data= removePasswordField(user)
+  
+  return {data,message:'user Unblocked succesfully'}
+}
+}
+  
+
+
+     

@@ -13,7 +13,7 @@ export default function adminAuthRoute() {
     userDbRepository,
     userRepositoryMongoDB,);
 
-  router.post('/login', controller.handleAdminLogin)
+  router.post('/', controller.handleAdminLogin)
 
   return router;
 }

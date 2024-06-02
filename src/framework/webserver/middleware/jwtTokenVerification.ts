@@ -8,7 +8,7 @@ const authServiceMiddleware = authServiceInterface(authService());
 
 export default async function jwtTokenVerification(req: Request, res: Response, next: NextFunction) {
     let token: string | null = '';
-    console.log(req.headers,"kkkkkk");
+   
     
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         token = req.headers.authorization.split(' ')[1];
