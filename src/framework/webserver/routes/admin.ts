@@ -17,7 +17,7 @@ export default function adminRoute() {
 
   router.route("/users").get(controller.handleGetAllUsers);
 
-  router.get("/user/:userId", controller.handleBlockUsers);
+  router.post("/userblock", controller.handleBlockUsers);
 
   return router;
 }

@@ -11,7 +11,10 @@ import {
   loginUser,
   authGoogle,
   resendOtp,
-  logout
+  forgot,
+  reset,
+  forgotVerifyOTP,
+  
 } from "../../application/use-cases/auth/userAuth";
 
 
@@ -89,6 +92,36 @@ const authController = (
     });
   });
 
+
+  const forgotPassword = asyncHandler(async (req: Request, res: Response) => {
+    const { email } = req.body;
+
+
+   const {emailValue}= await forgot(req,email,dbRepositoryUser, authService);
+
+    res.status(200).json({
+      status: "success",
+      type:'forgot',
+      email:emailValue,
+      message: "User has received OTP successfully",
+    });
+  });
+
+  const resetPassword = asyncHandler(async (req: Request, res: Response) => {
+   
+    const {oldpassword,passowrd}: { oldpassword: string; passowrd: string } = req.body;
+
+
+   const data= await reset(req,oldpassword,passowrd,dbRepositoryUser, authService);
+
+    res.status(200).json({
+      status: "success",
+      message: "User password update successfully",
+    });
+  });
+
+
+
   const googleAuth = asyncHandler(async (req: Request, res: Response) => {
     const userData: UserInterface = req.body;
 
@@ -106,22 +139,22 @@ const authController = (
       token,user,userId
     });
   });
+  const verifyOtpforgot = asyncHandler(async (req: Request, res: Response) => {
+    const { otp } = req.body;
 
-
-  const userLogout = asyncHandler(async (req: Request, res: Response) => {
-
-
-
-    const value = await logout(
-      req, 
+     await forgotVerifyOTP(
+      req,
+      otp,
+      authService
     );
 
     res.status(200).json({
       status: "success",
-      message: "User logout successfully",
-
+      message: "otp verfy succesfully successfully",
+  
     });
   });
+
 
   return {
     registerUser,
@@ -129,7 +162,9 @@ const authController = (
     userLogin,
     googleAuth,
     otpResend,
-    userLogout
+    forgotPassword,
+    resetPassword,
+    verifyOtpforgot
   };
 };
 

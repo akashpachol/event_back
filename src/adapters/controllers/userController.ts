@@ -20,7 +20,7 @@ const userController = (
     async (req: Request, res: Response) => {
       const userId: any = req.params.userId;
       const data = await getUserProfile(userId, dbRepositoryUser);
-      console.log(data,'jkfhdkjfhdjkfh');
+  
       
       res.status(HttpStatus.OK).json({
         status: "success",

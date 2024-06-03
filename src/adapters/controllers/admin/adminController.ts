@@ -8,7 +8,6 @@ import { blockuser, getAllUsers } from "../../../application/use-cases/user/user
 export default function adminController(
     userDbRepository: UserDbInterface,
     userDbRepositoryImpl: UserRepositoryMongoDB,
- 
 
   ) {
     const userRespository = userDbRepository(userDbRepositoryImpl());
@@ -17,13 +16,13 @@ export default function adminController(
     const handleGetAllUsers = asyncHandler(
       async (req: Request, res: Response) => {
         console.log("got to admin user fetching api");
-  
-        const data = await getAllUsers(userRespository);
+         let value={isAdmin:false}
+        const data = await getAllUsers(userRespository,value);
   
         res.status(HttpStatus.OK).json({
           status: "success",
           message: "All users details has been fetched",
-          data: data,
+           data,
         });
       }
     );
@@ -31,7 +30,7 @@ export default function adminController(
     const handleBlockUsers = asyncHandler(
       async (req: Request, res: Response) => {
       
-        const userId: any = req.params.userId;
+        const userId: any = req.body.userId;
         const {data,message} = await blockuser( userId,userRespository);
   
         res.status(HttpStatus.OK).json({

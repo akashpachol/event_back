@@ -7,7 +7,6 @@ export const userRepositoryMongoDB = () => {
     const getUserByEmail = async (email: string) => {
       const user: CreateUserInterface | null = await User.findOne({ email });
 
-      
       return user;
     };
   
@@ -27,7 +26,7 @@ export const userRepositoryMongoDB = () => {
       return newUser;
     };
 
-    const getAllUsers = async () => await User.find();
+    const getAllUsers = async (value:object) => await User.find(value);
   
     const addGoogleUser = async (user: UserEntityType) => {
    

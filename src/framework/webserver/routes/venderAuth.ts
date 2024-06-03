@@ -6,7 +6,7 @@ import { userRepositoryMongoDB } from '../../database/mongodb/repositories/userR
 import { authService } from '../../services/authService';
 
 
-const authRouter = () => {
+const venderAuth = () => {
   const router = express.Router();
 
   const controller = authController(
@@ -19,13 +19,10 @@ const authRouter = () => {
   router.post('/signup', controller.registerUser);
   router.post('/verify-otp', controller.verifyOtp)
   router.post('/login', controller.userLogin)
-  router.post('/googleAuth', controller.googleAuth)
-  router.post('/resend-otp', controller.otpResend)
-  router.post('/forgotPassword', controller.forgotPassword)
-  router.post('/resetPassword', controller.resetPassword)
 
-  router.post('/verifyotp', controller.verifyOtpforgot)
+
+  
   return router;
 };
 
-export default authRouter;
+export default venderAuth;

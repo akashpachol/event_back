@@ -8,13 +8,13 @@ import { UserDbInterface } from "../../repositories/userDbRepository";
 
 
 export  function removePasswordField(object: any){
-    let { _id, username, email, phone,image, createdAt, updatedAt} = object
+    let { _id, username, email, phone,image, createdAt,isBlocked, updatedAt} = object
 
     createdAt = new Date(createdAt).toLocaleString().split(",")[0];
 
     updatedAt = new Date(updatedAt).toLocaleString().split(",")[0]
 
-    return { _id, username, email, phone,image, createdAt, updatedAt,}
+    return { _id, username, email, phone,image, createdAt, updatedAt,isBlocked}
 
 }
 
@@ -75,8 +75,8 @@ export const getUserProfile = async (
   }
 
 
-  export const getAllUsers =async ( userRepository : ReturnType<UserDbInterface>) => {
-    const users = await userRepository.getAllUsersValue()
+  export const getAllUsers =async ( userRepository : ReturnType<UserDbInterface>,value:object) => {
+    const users = await userRepository.getAllUsersValue(value)
 
     const data =  users.map( user => removePasswordField(user))
     
