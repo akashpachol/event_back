@@ -1,10 +1,8 @@
 import asyncHandler from "express-async-handler";
 import { Request, Response } from "express";
-import { UserDbInterface } from "../../application/repositories/userDbRepository";
 import { UserRepositoryMongoDB } from "../../framework/database/mongodb/repositories/userRepositoryMongoDB";
 import { AuthService } from "../../framework/services/authService";
-import { AuthServiceInterface } from "../../application/services/authServiceInterface";
-import { UserInterface } from "../../types/userinterfaces";
+import { UserInterface } from "../../entities/userinterfaces";
 import {
   userRegister,
   verifyOTP,
@@ -14,23 +12,20 @@ import {
   forgot,
   reset,
   forgotVerifyOTP,
-  
 } from "../../application/use-cases/auth/userAuth";
 
-
 const authController = (
-  authServiceInterface: AuthServiceInterface,
   authServiceImpl: AuthService,
-  userDbRepository: UserDbInterface,
+
   userDbRepositoryImpl: UserRepositoryMongoDB
 ) => {
-  const dbRepositoryUser = userDbRepository(userDbRepositoryImpl());
-  const authService = authServiceInterface(authServiceImpl());
+  const dbRepositoryUser = userDbRepositoryImpl();
+  const authService = authServiceImpl();
 
   const registerUser = asyncHandler(async (req: Request, res: Response) => {
     const user: UserInterface = req.body;
 
-    await userRegister(req, user, dbRepositoryUser, authService);
+    await userRegister(user, dbRepositoryUser, authService);
 
     res.status(200).json({
       status: "success",
@@ -39,11 +34,10 @@ const authController = (
     });
   });
 
-
   const otpResend = asyncHandler(async (req: Request, res: Response) => {
     const { email } = req.body;
 
-   const {otp}= await resendOtp(req,email, authService);
+    const { otp } = await resendOtp(email, authService);
 
     res.status(200).json({
       status: "success",
@@ -52,12 +46,10 @@ const authController = (
     });
   });
 
-
   const verifyOtp = asyncHandler(async (req: Request, res: Response) => {
     const { otp } = req.body;
 
-    const { token, user,userId } = await verifyOTP(
-      req,
+    const { token, user, userId } = await verifyOTP(
       otp,
       dbRepositoryUser,
       authService
@@ -68,17 +60,17 @@ const authController = (
       message: "User has been registered successfully",
       token,
       user,
-      userId
+      userId,
     });
   });
 
   const userLogin = asyncHandler(async (req: Request, res: Response) => {
-    const { email, password }: { email: string; password: string } = req.body;
+    const { email, password,role }: { email: string; password: string,role:string } = req.body;
 
-    const { token, user,userId } = await loginUser(
-      req,
+    const { token, user, userId } = await loginUser(
       email,
       password,
+      role,
       dbRepositoryUser,
       authService
     );
@@ -88,31 +80,33 @@ const authController = (
       message: "User verified",
       token,
       user,
-      userId
+      userId,
     });
   });
 
-
   const forgotPassword = asyncHandler(async (req: Request, res: Response) => {
-    const { email } = req.body;
+    const { email,role } = req.body;
 
-
-   const {emailValue}= await forgot(req,email,dbRepositoryUser, authService);
+    const { emailValue } = await forgot(email,role, dbRepositoryUser, authService);
 
     res.status(200).json({
       status: "success",
-      type:'forgot',
-      email:emailValue,
+      type: "forgot",
+      email: emailValue,
       message: "User has received OTP successfully",
     });
   });
 
   const resetPassword = asyncHandler(async (req: Request, res: Response) => {
+    const {  password }: { oldpassword: string; password: string } =
+      req.body;
+
+    const data = await reset(
    
-    const {oldpassword,passowrd}: { oldpassword: string; passowrd: string } = req.body;
-
-
-   const data= await reset(req,oldpassword,passowrd,dbRepositoryUser, authService);
+      password,
+      dbRepositoryUser,
+      authService
+    );
 
     res.status(200).json({
       status: "success",
@@ -120,14 +114,10 @@ const authController = (
     });
   });
 
-
-
   const googleAuth = asyncHandler(async (req: Request, res: Response) => {
     const userData: UserInterface = req.body;
 
-
-    const {token,user,userId} = await authGoogle(
-      req,
+    const { token, user, userId } = await authGoogle(
       userData,
       dbRepositoryUser,
       authService
@@ -136,25 +126,21 @@ const authController = (
     res.status(200).json({
       status: "success",
       message: "User authenticated successfully",
-      token,user,userId
+      token,
+      user,
+      userId,
     });
   });
   const verifyOtpforgot = asyncHandler(async (req: Request, res: Response) => {
     const { otp } = req.body;
 
-     await forgotVerifyOTP(
-      req,
-      otp,
-      authService
-    );
+    await forgotVerifyOTP(otp, authService);
 
     res.status(200).json({
       status: "success",
       message: "otp verfy succesfully successfully",
-  
     });
   });
-
 
   return {
     registerUser,
@@ -164,7 +150,7 @@ const authController = (
     otpResend,
     forgotPassword,
     resetPassword,
-    verifyOtpforgot
+    verifyOtpforgot,
   };
 };
 

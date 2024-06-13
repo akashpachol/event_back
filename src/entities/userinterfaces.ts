@@ -6,11 +6,8 @@ export interface UserInterface {
     password: string;
     phone?: string | null;
     isBlocked?: boolean;
-    isVender?:boolean;
     isGoogle?:boolean;
-    isManager?:boolean;
-    isAdmin?:boolean;
-   
+    role:string
 
 }
 
@@ -21,9 +18,7 @@ export interface CreateUserInterface {
     password: string;
     phone?: string | null;
     isBlocked?: boolean;
-    isVender?:boolean;
     isGoogle?:boolean;
-    isManager?:boolean;
-    isAdmin?:boolean;
+    role?:string
 }
 

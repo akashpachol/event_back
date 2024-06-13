@@ -1,335 +1,253 @@
 import { HttpStatus } from "../../../types/httpStatus";
-import { Request } from "express";
-import { AuthServiceInterface } from "../../services/authServiceInterface";
+
 import AppError from "../../../utils/appError";
-import { UserDbInterface } from "../../repositories/userDbRepository";
 import  { UserEntityType } from "../../../entities/user";
-import sendVerifyMail from "../../../utils/mailler";
+import {sendVerifyMail} from "../../../utils/mailler";
+import { UserRepositoryMongoDB } from "../../../framework/database/mongodb/repositories/userRepositoryMongoDB";
+import { AuthService } from "../../../framework/services/authService";
 
 
+
+
+let userData: { username?: string; email?: string; password?: string,role?:string } | null = null;
+let otp: string | null = null;
+let otpGeneratedTime: number | null = null;
 
 export const userRegister = async (
-  req: Request,
   user: {
     username: string;
     email: string;
     password: string;
+    role:string
   },
-  userRepository: ReturnType<UserDbInterface>,
-  authService: ReturnType<AuthServiceInterface>
+  userRepository: ReturnType<UserRepositoryMongoDB>,
+  authService: ReturnType<AuthService>
 ) => {
   try {
+  
+    if (!user.email ||!user.username ||!user.email ||!user.password ||!user.role ) {
+      throw new AppError("please fill the form", HttpStatus.BAD_REQUEST);
+    }
     user.email = user.email.toLowerCase();
-
-    const isExistingEmail = await userRepository.getUserByEmailValue(user.email);
+    const isExistingEmail = await userRepository.getUserByEmail(user.email,user.role);
     if (isExistingEmail) {
       throw new AppError("This email is already registered with an account", HttpStatus.UNAUTHORIZED);
     }
-
-    user.password = await authService.encryptPasswordValue(user.password);
-
-    req.session.userData = user;
-
-    const otp = await authService.generateOTPValue();
-    console.log(otp, "sessionOTP");
-    req.session.otp = otp;
-    req.session.otpGeneratedTime = Date.now();
-
-    const value = await sendVerifyMail(user.email, otp);
-
-    return { value };
+    user.password = await authService.encryptPassword(user.password);
+    userData = user;
+    const otpValue = await authService.generateOTP();
+    otp = otpValue;
+    console.log(otp)
+    otpGeneratedTime = Date.now();
+    await sendVerifyMail(user.email, otp);
+    return;
   } catch (error) {
     throw new AppError("User registration failed", HttpStatus.INTERNAL_SERVER_ERROR);
   }
 };
 
 export const resendOtp = async (
-  req: Request,
-  email:string,
-  authService: ReturnType<AuthServiceInterface>
+  email: string,
+  
+  authService: ReturnType<AuthService>
 ) => {
- 
-
-  let userData;
-  if(req.session.userData ||req.session.email){
-     userData=req.session.userData||req.session.email ;
-  }else{
-    throw new AppError(
-      "User data not found in session",
-      HttpStatus.UNAUTHORIZED,
-    );
+  if (!userData || userData.email !== email) {
+    throw new AppError("User data not found", HttpStatus.UNAUTHORIZED);
   }
 
-  
-    
-delete req.session.otp 
-    const otp = await authService.generateOTPValue();
-  
-    console.log(otp,"sessionOTP");
+  const otpValue = await authService.generateOTP();
+  otp = otpValue;
+  console.log(otp, "sessionOTP");
+  otpGeneratedTime = Date.now();
 
-    req.session.otp = otp;
-    req.session.otpGeneratedTime = Date.now();
+  await sendVerifyMail(email, otp);
 
-    const value = await sendVerifyMail(email, otp);
-
-    return { otp };
-  
+  return { otp };
 };
 
 export const verifyOTP = async (
-  req: Request,
-  otp: string,
-  userRepository: ReturnType<UserDbInterface>,
-  authService: ReturnType<AuthServiceInterface>
+  inputOtp: string,
+  userRepository: ReturnType<UserRepositoryMongoDB>,
+  authService: ReturnType<AuthService>
 ) => {
+  if (!inputOtp) {
+    throw new AppError("Please provide a valid OTP", HttpStatus.UNAUTHORIZED);
+  }
 
-    if (!otp) {
-      throw new AppError("Please provide a valid OTP", HttpStatus.UNAUTHORIZED);
-    }
+  if (!otp || !otpGeneratedTime) {
+    throw new AppError("OTP or OTP generated time not found", HttpStatus.UNAUTHORIZED);
+  }
 
-    const sessionOTP = req.session.otp;
-  
-    
-    const otpGeneratedTime= req.session.otpGeneratedTime;
-    if (!otpGeneratedTime) {
-      throw new AppError("OTP generated time not found", HttpStatus.UNAUTHORIZED);
-    }
-    
-    const currentTime = Date.now();
-    const otpValidityPeriod = 60000; 
-  
-    if (currentTime - otpGeneratedTime > otpValidityPeriod) {
-      throw new AppError("OTP has expired", HttpStatus.UNAUTHORIZED);
-    }
+  const currentTime = Date.now();
+  const otpValidityPeriod = 60000;
 
-  
-    const verification = await authService.verifyOTPValue(otp, sessionOTP);
+  if (currentTime - otpGeneratedTime > otpValidityPeriod) {
+    throw new AppError("OTP has expired", HttpStatus.UNAUTHORIZED);
+  }
 
-    if (!verification) {
-      throw new AppError(
-        "Invalid OTP. Please provide a valid OTP",
-        HttpStatus.UNAUTHORIZED
-      );
-    }
+  const isValidOtp = await authService.verifyOTP(inputOtp, otp);
 
-    
-    const userData = req.session.userData as UserEntityType;
-  
-    if (!userData) {
-      throw new AppError(
-        "User data not found in session",
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
+  if (!isValidOtp) {
+    throw new AppError("Invalid OTP. Please provide a valid OTP", HttpStatus.UNAUTHORIZED);
+  }
 
+  if (!userData) {
+    throw new AppError("User data not found", HttpStatus.INTERNAL_SERVER_ERROR);
+  }
 
+  const userEntity:UserEntityType = {
+    username: userData.username,
+    email: userData.email,
+    password: userData.password,
+    role:userData.role,
+  };
 
+  const createdUser: any = await userRepository.addUser(userEntity);
 
-    const userEntity ={
-      username:userData.username,
-      email:userData.email,
-      password: userData.password
-    }
+  const token = authService.generateToken(createdUser._id.toString());
 
- 
-    const createdUser: any = await userRepository.addUserValue(userEntity);
-
-    
-
-  
-    const token = authService.generateTokenValue(createdUser._id.toString());
-
-    return { token, user:createdUser?.username,userId:createdUser._id };
+  return { token, user: createdUser.username, userId: createdUser._id };
 };
+
 export const loginUser = async (
-  req: Request,
   email: string,
   password: string,
-  userRepository: ReturnType<UserDbInterface>,
-  authService: ReturnType<AuthServiceInterface>
+  role:string,
+  userRepository: ReturnType<UserRepositoryMongoDB>,
+  authService: ReturnType<AuthService>
 ) => {
+  const user = await userRepository.getUserByEmail(email,role);
 
-    const user = await userRepository.getUserByEmailValue(email);
+  if (!user) {
+    throw new AppError("User not found", HttpStatus.UNAUTHORIZED);
+  }
+  if (!user._id) {
+    throw new AppError("User ID is missing", HttpStatus.INTERNAL_SERVER_ERROR);
+  }
 
-    if (!user) {
-      throw new AppError("User not found", HttpStatus.UNAUTHORIZED);
-    }
-    if (!user._id) {
-      throw new AppError(
-        "User ID is missing",
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
+  if (user.isBlocked) {
+    throw new AppError("User is blocked", HttpStatus.INTERNAL_SERVER_ERROR);
+  }
 
-    const isPasswordCorrect = await authService.comparePassword(
-      password,
-      user.password
-    );
+  const isPasswordCorrect = await authService.comparePassword(password, user.password);
 
-    if (!isPasswordCorrect) {
-      throw new AppError("Incorrect password", HttpStatus.UNAUTHORIZED);
-    }
-    if(user.isGoogle){
-      throw new AppError("Person is google user", HttpStatus.UNAUTHORIZED);
+  if (!isPasswordCorrect) {
+    throw new AppError("Incorrect password", HttpStatus.UNAUTHORIZED);
+  }
 
-    }
+  const token = authService.generateToken(user._id.toString());
 
-
-    await authService.cleanUpSessionValue(req);
-
-
-    const token = authService.generateTokenValue(user._id.toString());
-
-    return { token, user: user?.username,userId:user._id };
-
+  return { token, user: user.username, userId: user._id };
 };
 
-export  const authGoogle = async (
-  req: Request,
+export const authGoogle = async (
   userData: {
     username: string;
     email: string;
- 
+    role:string
   },
-  userRepository: ReturnType<UserDbInterface>,
-  authService: ReturnType<AuthServiceInterface>
+  userRepository: ReturnType<UserRepositoryMongoDB>,
+  authService: ReturnType<AuthService>
 ) => {
+  const userEntity = {
+    username: userData.username,
+    email: userData.email,
+    password: "12345678",
+    role:userData.role
+  };
 
-  
-    const userEntity ={
-      username:userData.username,
-      email:userData.email,
-      password:"12345678"
-    }
-    
-    
+  const createdUser: any = await userRepository.addGoogleUser(userEntity);
 
+  const token = authService.generateToken(createdUser._id.toString());
 
- 
-    const createdUser: any = await userRepository.addGoogleUserValue(userEntity);
-
-
-    
-
-  
-    const token = authService.generateTokenValue(createdUser._id.toString());
-
-    return { token, user:createdUser?.username,userId:createdUser._id  };
+  return { token, user: createdUser.username, userId: createdUser._id };
 };
 
 export const forgot = async (
-  req: Request,
-  email:string,
-  userRepository: ReturnType<UserDbInterface>,
-  authService: ReturnType<AuthServiceInterface>
+  email: string,
+  role:string,
+  userRepository: ReturnType<UserRepositoryMongoDB>,
+  authService: ReturnType<AuthService>
 ) => {
+  const user = await userRepository.getUserByEmail(email,role);
 
- 
-  const user = await userRepository.getUserByEmailValue(email);
- 
-  if(!user ){
-    throw new AppError(
-      "User data not found in session",
-      HttpStatus.UNAUTHORIZED,
-    );
+  if (!user) {
+    throw new AppError("User not found", HttpStatus.UNAUTHORIZED);
   }
 
-  
-    
-delete req.session.otp 
-    const otp = await authService.generateOTPValue();
-    req.session.email=email
-    console.log(otp,"sessionOTP");
 
-    req.session.otp = otp;
-    req.session.otpGeneratedTime = Date.now();
 
-    const value = await sendVerifyMail(email, otp);
+  const otpValue = await authService.generateOTP();
+  otp = otpValue;
+  console.log(otp, "sessionOTP");
+  otpGeneratedTime = Date.now();
 
-    return { emailValue:email };
-  
+  await sendVerifyMail(email, otp);
+
+  userData = { ...userData, email,role };
+
+  return { emailValue:email};
 };
-
 
 export const reset = async (
-  req: Request,
-  old: string,
-  password: string,
-  userRepository: ReturnType<UserDbInterface>,
-  authService: ReturnType<AuthServiceInterface>
+  newPassword: string,
+  userRepository: ReturnType<UserRepositoryMongoDB>,
+  authService: ReturnType<AuthService>
 ) => {
-  const email:any=req.session.email
+  if (!userData?.email ) {
+    throw new AppError("Email not found", HttpStatus.UNAUTHORIZED);
+  }
+  if (!userData?.role ) {
+    throw new AppError("role not found", HttpStatus.UNAUTHORIZED);
+  }
+
+  const user = await userRepository.getUserByEmail(userData.email,userData.role);
+
+  if (!user) {
+    throw new AppError("User not found", HttpStatus.UNAUTHORIZED);
+  }
+  if (!user._id) {
+    throw new AppError("User ID is missing", HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
+  let user_id = user._id.toString();
+  const encriptPassword = await authService.encryptPassword(newPassword);
+
+let data={ password: encriptPassword }
 
 
-    const user:any = await userRepository.getUserByEmailValue(email);
+  const updatedUser = await userRepository.updateUserByProperty(user_id, data);
 
-    if (!user) {
-      throw new AppError("User not found", HttpStatus.UNAUTHORIZED);
-    }
-    if (!user._id) {
-      throw new AppError(
-        "User ID is missing",
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
-
-    const isPasswordCorrect = await authService.comparePassword(
-      old,
-      user.password
-    );
-
-    if (!isPasswordCorrect) {
-      throw new AppError("Incorrect password", HttpStatus.UNAUTHORIZED);
-    }
-    let id:any=user._id
-
-    const userData = await userRepository.updateUserByPropertyValue(id, {password});
-   
-    
-console.log(userData,"khkfjhkdjh");
-
-
-
-    return ;
-
+  return ;
 };
-
 
 export const forgotVerifyOTP = async (
-  req: Request,
-  otp: string,
 
-  authService: ReturnType<AuthServiceInterface>
+  inputOtp: string,
+
+  authService: ReturnType<AuthService>
 ) => {
+  if (!inputOtp) {
+    throw new AppError("Please provide a valid OTP", HttpStatus.UNAUTHORIZED);
+  }
 
-    if (!otp) {
-      throw new AppError("Please provide a valid OTP", HttpStatus.UNAUTHORIZED);
-    }
+  if (!otp || !otpGeneratedTime) {
+    throw new AppError("OTP or OTP generated time not found", HttpStatus.UNAUTHORIZED);
+  }
 
-    const sessionOTP = req.session.otp;
-  
-    
-    const otpGeneratedTime= req.session.otpGeneratedTime;
-    if (!otpGeneratedTime) {
-      throw new AppError("OTP generated time not found", HttpStatus.UNAUTHORIZED);
-    }
-    
-    const currentTime = Date.now();
-    const otpValidityPeriod = 60000; 
-  
-    if (currentTime - otpGeneratedTime > otpValidityPeriod) {
-      throw new AppError("OTP has expired", HttpStatus.UNAUTHORIZED);
-    }
+  const currentTime = Date.now();
+  const otpValidityPeriod = 60000;
 
-  
-    const verification = await authService.verifyOTPValue(otp, sessionOTP);
+  if (currentTime - otpGeneratedTime > otpValidityPeriod) {
+    throw new AppError("OTP has expired", HttpStatus.UNAUTHORIZED);
+  }
 
-    if (!verification) {
-      throw new AppError(
-        "Invalid OTP. Please provide a valid OTP",
-        HttpStatus.UNAUTHORIZED
-      );
-    }
+  const isValidOtp = await authService.verifyOTP(inputOtp, otp);
 
-    return ;
+  if (!isValidOtp) {
+    throw new AppError("Invalid OTP. Please provide a valid OTP", HttpStatus.UNAUTHORIZED);
+  }
+
+  return { otp };
 };
+

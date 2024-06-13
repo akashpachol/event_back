@@ -1,12 +1,16 @@
 import { HttpStatus } from "../../../types/httpStatus";
 import AppError from "../../../utils/appError";
-import { AuthServiceInterface } from "../../../application/services/authServiceInterface";
-import { UserDbInterface } from "../../repositories/userDbRepository";
+
+import { AuthService } from "../../../framework/services/authService";
+import { UserRepositoryMongoDB } from "../../../framework/database/mongodb/repositories/userRepositoryMongoDB";
 
 
 
-export const adminLogin = async (email: string, password: string, services:ReturnType<AuthServiceInterface>, userRepository: ReturnType<UserDbInterface>, ) =>{
-    const user = await userRepository.getUserByEmailValue(email);
+export const adminLogin = async (email: string, password: string,role:string, services:ReturnType<AuthService>, userRepository: ReturnType<UserRepositoryMongoDB>, ) =>{
+    
+  console.log(email,role);
+  
+  const user = await userRepository.getUserByEmail(email,role);
 
    
     if (!user ) {
@@ -15,7 +19,7 @@ export const adminLogin = async (email: string, password: string, services:Retur
       if (!user._id ) {
         throw new AppError("User ID not found", HttpStatus.INTERNAL_SERVER_ERROR);
       }
-      if (!user.isAdmin) {
+      if (user.role !=='admin') {
         throw new AppError("User is NOT FOUND", HttpStatus.FORBIDDEN);
       }
       const isPasswordCorrect = await services.comparePassword(
@@ -31,7 +35,7 @@ export const adminLogin = async (email: string, password: string, services:Retur
   
   
   
-      const token = services.generateTokenValue(user._id.toString());
+      const token = services.generateToken(user._id.toString());
 
     return { token, user: user?.username,userId:user._id };
 

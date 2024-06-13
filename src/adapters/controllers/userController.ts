@@ -2,7 +2,6 @@ import asyncHandler from "express-async-handler";
 
 
 import {  Request, Response } from "express";
-import { UserDbInterface } from "../../application/repositories/userDbRepository";
 import { UserRepositoryMongoDB } from "../../framework/database/mongodb/repositories/userRepositoryMongoDB";
 import { HttpStatus } from "../../types/httpStatus";
 import {
@@ -10,11 +9,15 @@ import {
   updateProfileImg,
   updateUserProfile,
 } from "../../application/use-cases/user/userDetails";
+import { verifyLocationGet } from "../../application/use-cases/location/verifyLocation";
+import { locationRepositoryMongoDBType } from "../../framework/database/mongodb/repositories/locationRepositoryMongoDB";
 const userController = (
-  userDbRepository: UserDbInterface,
-  userDbRepositoryImpl: UserRepositoryMongoDB
+  userDbRepositoryImpl: UserRepositoryMongoDB,
+  locationDbRepositoryImpl:locationRepositoryMongoDBType ,
 ) => {
-  const dbRepositoryUser = userDbRepository(userDbRepositoryImpl());
+  const dbRepositoryUser = userDbRepositoryImpl();
+  const dbRepositoryLocation = locationDbRepositoryImpl();
+
 
   const handleGetUserProfile = asyncHandler(
     async (req: Request, res: Response) => {
@@ -60,13 +63,30 @@ const userController = (
     }
   );
 
+
+  const getVerifyLocation= asyncHandler(async (req: Request, res: Response) => {
+
+    const data=await verifyLocationGet(dbRepositoryLocation);
+
+ 
+    res.status(HttpStatus.OK).json({
+      status: "success",
+      message: "All users details has been fetched",
+      data
+    });
+  });
+
+
+
   
 
 
   return {
     handleGetUserProfile,
     handleUpdateUserProfile,
-    handleUpdateProfileImage
+    handleUpdateProfileImage,
+    getVerifyLocation,
+
   };
 };
 

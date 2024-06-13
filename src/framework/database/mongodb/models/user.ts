@@ -1,5 +1,5 @@
-import mongoose, { Schema, Document } from "mongoose";
-import bcrypt from "bcrypt";
+import mongoose, { Schema, Document,model } from "mongoose";
+
 
 export interface UserDocument extends Document {
   email: string;
@@ -8,11 +8,9 @@ export interface UserDocument extends Document {
   image: string | null;
   phone: string | null;
   isBlocked: boolean;
-  isVender: boolean;
   isGoogle: boolean;
-  isManager: boolean;
-  isAdmin: boolean;
-  isBlock:boolean
+  isBlock:boolean,
+  role:string
 }
 
 const userSchema: Schema<UserDocument> = new Schema(
@@ -36,18 +34,11 @@ const userSchema: Schema<UserDocument> = new Schema(
       type: Boolean,
       default: false,
     },
-    isVender: {
-      type: Boolean,
-      default: false,
+    role: {
+      type: String,
+
     },
-    isManager: {
-      type: Boolean,
-      default: false,
-    },
-    isAdmin: {
-      type: Boolean,
-      default: false,
-    },
+
     isGoogle: {
       type: Boolean,
       default: false,
@@ -62,6 +53,6 @@ const userSchema: Schema<UserDocument> = new Schema(
   }
 );
 
-const User = mongoose.model("User", userSchema);
+const User = model("User", userSchema);
 
 export default User;

@@ -1,7 +1,7 @@
+import { UserRepositoryMongoDB } from "../../../framework/database/mongodb/repositories/userRepositoryMongoDB";
 import { HttpStatus } from "../../../types/httpStatus";
 
 import AppError from "../../../utils/appError";
-import { UserDbInterface } from "../../repositories/userDbRepository";
 
 
 
@@ -21,14 +21,14 @@ export  function removePasswordField(object: any){
 export const getUserProfile = async (
    
     userId:string,
-    userRepository: ReturnType<UserDbInterface>,
+    userRepository: ReturnType<UserRepositoryMongoDB>,
           
   ) => {
     
     if(!userId){
         throw new AppError('Somthing went wrong please log in again', HttpStatus.UNAUTHORIZED)
     }
-    const user  = await userRepository.getUserByIdValue(userId);
+    const user  = await userRepository.getUserById(userId);
     let data= removePasswordField(user)
     if(!user){
         throw new AppError('User Dose not exist', HttpStatus.UNAUTHORIZED)
@@ -45,7 +45,7 @@ export const getUserProfile = async (
       phone: string;
  
     },
-    userRepository: ReturnType<UserDbInterface>
+    userRepository: ReturnType<UserRepositoryMongoDB>
   ) => {
     if (!updates) {
       throw new AppError(
@@ -54,7 +54,7 @@ export const getUserProfile = async (
       );
     }
   
-    const user = await userRepository.updateUserByPropertyValue(id, updates);
+    const user = await userRepository.updateUserByProperty(id, updates);
     const data = removePasswordField(user);
   
     if (!data) {
@@ -64,48 +64,54 @@ export const getUserProfile = async (
     return data;
   };
 
-  export const updateProfileImg = async (id:string, url: string, repository:ReturnType<UserDbInterface>) =>{
+  export const updateProfileImg = async (id:string, url: string, repository:ReturnType<UserRepositoryMongoDB>) =>{
 
     if(!id || !url){
       throw new AppError("Somthing went wrong", HttpStatus.BAD_REQUEST);
     }
   
-    return await repository.changeProfileImgValue(id, url);
+    return await repository.changeProfileImg(id, url);
   
   }
 
 
-  export const getAllUsers =async ( userRepository : ReturnType<UserDbInterface>,value:object) => {
-    const users = await userRepository.getAllUsersValue(value)
+  export const getAllUsers =async ( userRepository : ReturnType<UserRepositoryMongoDB>,value:object) => {
+    const users = await userRepository.getAllUsers(value)
 
     const data =  users.map( user => removePasswordField(user))
     
     return data
 }
 
-export const blockuser =async (    userId: string, userRepository : ReturnType<UserDbInterface>) => {
+export const blockuser =async (    userId: string, userRepository : ReturnType<UserRepositoryMongoDB>) => {
 
 
 
   if(!userId){
     throw new AppError('Somthing went wrong please log in again', HttpStatus.UNAUTHORIZED)
 }
-const user  = await userRepository.getUserByIdValue(userId);
+const user  = await userRepository.getUserById(userId);
 
 if(!user){
     throw new AppError('User Dose not exist', HttpStatus.UNAUTHORIZED)
 }
+
+
 if(!user.isBlocked){
   let updates={isBlocked:true}
-  const user = await userRepository.updateUserByPropertyValue(userId, updates);
+  const user = await userRepository.updateUserByProperty(userId, updates);
   let data= removePasswordField(user)
+  
   
   return {data,message:'user blocked succesfully'}
 }else{
   let updates={isBlocked:false}
-  const user = await userRepository.updateUserByPropertyValue(userId, updates);
-  let data= removePasswordField(user)
+  const user = await userRepository.updateUserByProperty(userId, updates);
+
   
+  let data= removePasswordField(user)
+  console.log(data,"kkkkkkkkkdsdsds");
+
   return {data,message:'user Unblocked succesfully'}
 }
 }

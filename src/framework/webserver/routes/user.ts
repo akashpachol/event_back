@@ -1,7 +1,8 @@
 import express from 'express';
-import { userDbRepository } from '../../../application/repositories/userDbRepository';
 import { userRepositoryMongoDB } from '../../database/mongodb/repositories/userRepositoryMongoDB';
 import userController from '../../../adapters/controllers/userController';
+import { locationRepositoryMongoDB } from '../../database/mongodb/repositories/locationRepositoryMongoDB';
+import { venderRepositoryMongoDB } from '../../database/mongodb/repositories/venterRepositoryMongoDB';
 
 
 const userRouter = () =>{
@@ -10,8 +11,8 @@ const userRouter = () =>{
 
 
     const controller = userController(
-        userDbRepository,
-        userRepositoryMongoDB
+        userRepositoryMongoDB,
+        locationRepositoryMongoDB,
     )
 
     router
@@ -19,6 +20,7 @@ const userRouter = () =>{
     .get(controller.handleGetUserProfile)
     .patch(controller.handleUpdateUserProfile);
    
+    router.get('/getVerifyLocation',controller.getVerifyLocation)
 
     router.patch('/profileimage/:userId', controller.handleUpdateProfileImage);
    
