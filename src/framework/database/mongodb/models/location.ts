@@ -1,17 +1,19 @@
 import  mongoose, { Schema,Types,model } from "mongoose";
-
+export interface Image {
+  url: string;
+}
 export interface LocationDocument extends Document {
     manager:Types.ObjectId;
     address:string;
     name: string;
     description: string;
-    image:object;
+    image:Image[];
     capasity:number;
     price:number;
     state:string;
     verify:Boolean;
     isBlocked:Boolean;
-    type:Types.ObjectId;
+    type: Types.ObjectId[];
 
   }
 
@@ -25,11 +27,11 @@ const locationSchema:Schema<LocationDocument>= new Schema(
         required: true
     },
 
-    type:{
+    type: [{
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'event',
+      ref: 'Event',
       required: true
-    },
+    }],
      name: {
       type: String,
       required: true,
@@ -39,7 +41,9 @@ const locationSchema:Schema<LocationDocument>= new Schema(
       required: true,
     },
     image: {
-        type: [String],
+      type: [
+        { url: String }
+      ]
     },
     address:{
         type: String,

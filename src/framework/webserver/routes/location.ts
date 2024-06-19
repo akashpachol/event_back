@@ -9,8 +9,9 @@ export const  locationRouter=()=>{
 
     router.post('/addLocation', controller.addLocation);
     router.get('/getlocationwithid/:maangerId', controller.getLocationWithId);
+    router.get('/getLocationDetails/:locationId', controller.getLocationDetails);
     router.post('/verfyLocation', controller.LocationVerify);
-    router.post('/editLocation', controller.editLocation);
+    router.put('/editLocation', controller.editLocation);
 
     return router
 }

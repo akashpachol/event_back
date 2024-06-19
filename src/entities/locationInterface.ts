@@ -1,6 +1,7 @@
 import { Types } from "mongoose";
 
 export interface LocationInterface {
+  id?: string|undefined,
     manager:Types.ObjectId;
     address:string;
     name: string;

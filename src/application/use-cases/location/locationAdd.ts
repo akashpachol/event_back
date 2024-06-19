@@ -52,16 +52,30 @@ export const LocationWithIdGet = async (
 
   return data;
 };
+export const LocationDetails = async (
+  location_id: string,
+  repository: ReturnType<locationRepositoryMongoDBType>
+) => {
+  console.log(location_id,"jjk");
+  
+  if (!location_id) {
+    throw new AppError("Please fill all the fields", HttpStatus.NOT_ACCEPTABLE);
+  }
 
+  const data = repository.getLocationbyIdDb(location_id);
+
+  return data;
+};
 
 
 export const locationEdit = async (
-  id:string,
+
   location: LocationInterface,
   repository: ReturnType<locationRepositoryMongoDBType>
 ) => {
 
   const {
+    
     manager,
     address,
     name,
@@ -73,6 +87,8 @@ export const locationEdit = async (
     state,
   } = location;
 
+  const id=location.id
+  console.log(id,"hgkhgkj",location);
   
   if(!id){
 

@@ -22,6 +22,8 @@ export const adminLogin = async (email: string, password: string,role:string, se
       if (user.role !=='admin') {
         throw new AppError("User is NOT FOUND", HttpStatus.FORBIDDEN);
       }
+      console.log(user.password,"akkakak");
+      
       const isPasswordCorrect = await services.comparePassword(
         password,
         user.password

@@ -5,7 +5,6 @@ import configKeys from "../../config";
 import jwtDecode from "jwt-decode";
 import { Request } from "express";
 
-
 export const authService = () => {
   const encryptPassword = async (password: string) => {
     const salt = await bcrypt.genSalt(10);
@@ -19,53 +18,43 @@ export const authService = () => {
 
   const generateToken = (payload: string) => {
     const token = jwt.sign({ payload }, configKeys.JWT_SECRET, {
-      expiresIn: "5m",
+      expiresIn: "5d",
     });
-    const refreshToken = jwt.sign(
-      { payload },
-      configKeys.JWT_REFRESH_SECRET,
-      { expiresIn: "59m" }
-    );
+    const refreshToken = jwt.sign({ payload }, configKeys.JWT_REFRESH_SECRET, {
+      expiresIn: "59m",
+    });
 
     return token;
   };
 
   const verifyToken = (token: string) => {
-
     return jwt.verify(token, configKeys.JWT_SECRET);
   };
 
   const generateOTP = async () => {
+    const characters = "0123456789"; // The characters to use for the OTP
+    let otp = "";
 
-      const characters = '0123456789'; // The characters to use for the OTP
-      let otp = '';
-    
-      for (let i = 0; i < 4; i++) {
-        const randomIndex = Math.floor(Math.random() * characters.length);
-        otp += characters[randomIndex];
-      }
-    
-      return otp;
- 
-  };
-
-  const verifyOTP = async (otp:string,sessionotp:string|undefined) => {
-
-    if(otp===sessionotp){
-      return true
-    }else{
-      return false
+    for (let i = 0; i < 4; i++) {
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      otp += characters[randomIndex];
     }
-   
-  };
-  const cleanUpSession=(req:Request)=>{
 
-      const sessionData = req.session!;
-      delete sessionData.otp;
-      delete sessionData.otpGeneratedTime;
-      
-  
-  }
+    return otp;
+  };
+
+  const verifyOTP = async (otp: string, sessionotp: string | undefined) => {
+    if (otp === sessionotp) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+  const cleanUpSession = (req: Request) => {
+    const sessionData = req.session!;
+    delete sessionData.otp;
+    delete sessionData.otpGeneratedTime;
+  };
 
   return {
     encryptPassword,
@@ -74,13 +63,11 @@ export const authService = () => {
     verifyToken,
     generateOTP,
     verifyOTP,
-    cleanUpSession
+    cleanUpSession,
     // verifyAdmin,
   };
 };
 
 export type AuthService = typeof authService;
 
-
 export type AuthServiceReturn = ReturnType<AuthService>;
-

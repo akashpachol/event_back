@@ -3,7 +3,7 @@ import expressAsyncHandler from "express-async-handler";
 
 import { HttpStatus } from "../../../types/httpStatus";
 import { locationRepositoryMongoDBType } from "../../../framework/database/mongodb/repositories/locationRepositoryMongoDB";
-import { LocationWithIdGet, locationAdd, locationEdit } from "../../../application/use-cases/location/locationAdd";
+import { LocationDetails, LocationWithIdGet, locationAdd, locationEdit } from "../../../application/use-cases/location/locationAdd";
 import { LocationInterface } from "../../../entities/locationInterface";
 import { verifyLocation } from "../../../application/use-cases/location/verifyLocation";
 
@@ -37,6 +37,19 @@ export const locationController = (
     });
   });
 
+  const getLocationDetails = expressAsyncHandler(async (req: Request, res: Response) => {
+
+    const location_id:string = req.params.locationId;
+    const data=await LocationDetails(location_id,repository);
+    console.log(data,"hello");
+    
+    res.status(HttpStatus.OK).json({
+      status: "success",
+      message: "All location is fetched",
+      data
+    });
+  });
+
   const LocationVerify = expressAsyncHandler(async (req: Request, res: Response) => {
     const locationId:string = req.body.locationId;
     const data=await verifyLocation(locationId,repository);
@@ -49,9 +62,11 @@ export const locationController = (
 
 
   const editLocation = expressAsyncHandler(async (req: Request, res: Response) => {
-    const locationId:string = req.params.locationId;
+  
+
+    
 const location=req.body
-    const data=await locationEdit(locationId,location,repository);
+    const data=await locationEdit(location,repository);
     res.status(HttpStatus.OK).json({
       status: "success",
       message: "All users details has been fetched",
@@ -68,6 +83,7 @@ const location=req.body
     addLocation,
     getLocationWithId,
     LocationVerify,
-    editLocation
+    editLocation,
+    getLocationDetails
   };
 };
