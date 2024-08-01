@@ -12,7 +12,7 @@ export interface venderInterface {
     verify?:Boolean;
   }
   export interface CreateVenderInterface {
-    _id?: Types.ObjectId |undefined,
+    _id?: undefined|string,
     vender:Types.ObjectId;
     type:Types.ObjectId;
     address:string;

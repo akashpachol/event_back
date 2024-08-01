@@ -2,7 +2,8 @@ import express from 'express';
 import { userRepositoryMongoDB } from '../../database/mongodb/repositories/userRepositoryMongoDB';
 import userController from '../../../adapters/controllers/userController';
 import { locationRepositoryMongoDB } from '../../database/mongodb/repositories/locationRepositoryMongoDB';
-import { venderRepositoryMongoDB } from '../../database/mongodb/repositories/venterRepositoryMongoDB';
+import jwtTokenVerification from '../middleware/jwtTokenVerification';
+import { walletRepositoryMongoDB } from '../../database/mongodb/repositories/walletRepositoryMongoDB';
 
 
 const userRouter = () =>{
@@ -13,17 +14,20 @@ const userRouter = () =>{
     const controller = userController(
         userRepositoryMongoDB,
         locationRepositoryMongoDB,
+        walletRepositoryMongoDB
     )
 
     router
     .route("/profile/:userId")
-    .get(controller.handleGetUserProfile)
-    .patch(controller.handleUpdateUserProfile);
+    .get(jwtTokenVerification, controller.handleGetUserProfile)  
+    .patch(jwtTokenVerification, controller.handleUpdateUserProfile);
    
     router.get('/getVerifyLocation',controller.getVerifyLocation)
 
-    router.patch('/profileimage/:userId', controller.handleUpdateProfileImage);
-   
+    router.patch('/profileimage/:userId',jwtTokenVerification, controller.handleUpdateProfileImage);
+    router.get('/getWallet/:userId',jwtTokenVerification, controller.getWallet);
+    router.get('/searchData',jwtTokenVerification, controller.allUsers);
+    router.get('/manager',jwtTokenVerification, controller.getManger);
 
     return router
 }

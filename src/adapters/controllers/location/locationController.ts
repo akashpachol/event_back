@@ -22,7 +22,7 @@ export const locationController = (
   
     res.status(HttpStatus.OK).json({
       status: "success",
-      message: "All users details has been fetched",
+      message: "location added success fully",
       
     });
   });
@@ -41,11 +41,10 @@ export const locationController = (
 
     const location_id:string = req.params.locationId;
     const data=await LocationDetails(location_id,repository);
-    console.log(data,"hello");
     
     res.status(HttpStatus.OK).json({
       status: "success",
-      message: "All location is fetched",
+      message: " location details is fetched",
       data
     });
   });
@@ -55,7 +54,7 @@ export const locationController = (
     const data=await verifyLocation(locationId,repository);
     res.status(HttpStatus.OK).json({
       status: "success",
-      message: "All users details has been fetched",
+      message: "location is verifyed",
       data
     });
   });
@@ -69,7 +68,7 @@ const location=req.body
     const data=await locationEdit(location,repository);
     res.status(HttpStatus.OK).json({
       status: "success",
-      message: "All users details has been fetched",
+      message: "location is edited",
       data
     });
   });

@@ -2,7 +2,6 @@ import { venderTypeInterface } from "../../../entities/venderTypeInterface";
 import { venderRepositoryMongoDBType } from "../../../framework/database/mongodb/repositories/venterRepositoryMongoDB";
 import { HttpStatus } from "../../../types/httpStatus";
 import AppError from "../../../utils/appError";
-
 export const venderTypeAdd = async (
   vender: {
     name:string;
@@ -23,11 +22,7 @@ export  const VenderTypeGet=async (
 
     return getEvent;
   }
-
   export const VenderTypeBlock =async ( vendertypeid: string,  repository:ReturnType<venderRepositoryMongoDBType>) => {
-
-
-
     if(!vendertypeid){
       throw new AppError('Somthing went wrong please log in again', HttpStatus.UNAUTHORIZED)
   }
@@ -52,22 +47,14 @@ export  const VenderTypeGet=async (
 
   export  const venderTypeEdit=async (venderId:string,venderTypeData:venderTypeInterface,
     repository:ReturnType<venderRepositoryMongoDBType>)=>{
-      
-
-
       if(!venderId){
-
         throw new AppError("vender dose not exist", HttpStatus.NOT_FOUND)
     }
         const {name,description,image}=venderTypeData
-       
-       
         if (
             !name ||
-          
             !description ||
             !image 
-           
           ) {
             throw new AppError("Please fill all the fields", HttpStatus.NOT_ACCEPTABLE);
           }

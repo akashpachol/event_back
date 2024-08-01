@@ -24,6 +24,7 @@ const authRouter = () => {
   router.post('/resetPassword', controller.resetPassword)
 
   router.post('/verifyotp', controller.verifyOtpforgot)
+  router.post('/refreshAccessToken/', controller.refreshAccessToken)
   return router;
 };
 

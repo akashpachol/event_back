@@ -1,5 +1,6 @@
 
 import { venderInterface } from "../../../entities/venderInterface";
+import { UserRepositoryMongoDBType } from "../../../framework/database/mongodb/repositories/userRepositoryMongoDB";
 import { venderRepositoryMongoDBType } from "../../../framework/database/mongodb/repositories/venterRepositoryMongoDB";
 import { HttpStatus } from "../../../types/httpStatus";
 import AppError from "../../../utils/appError";
@@ -25,14 +26,23 @@ repository:ReturnType<venderRepositoryMongoDBType>)=>{
 }
 
 export  const VenderWithIdGet=async (  venderId: string,
-  repository:ReturnType<venderRepositoryMongoDBType>)=>{
+  repository:ReturnType<venderRepositoryMongoDBType>,dbRepositoryUser: ReturnType<UserRepositoryMongoDBType>,)=>{
 if(!venderId){
   throw new AppError('Somthing went wrong ', HttpStatus.UNAUTHORIZED)
 }
+const vender = await dbRepositoryUser.getUserById(venderId);
 
-    const data = repository.getVenderbyVenderIdDb(venderId);
+if(!vender?.isBlocked){
+  const data = repository.getVenderbyVenderIdDb(venderId);
+console.log(data,"data")
+  return data;
+}else{
 
-    return data;
+  throw new AppError('Somthing went wrong ', HttpStatus.UNAUTHORIZED)
+
+}
+
+
   }
 
   export  const venderEdit=async (venderId:string,venderData:venderInterface,

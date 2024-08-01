@@ -1,7 +1,8 @@
 import  mongoose, { Schema,Types,model } from "mongoose";
+import { UserDocument } from "./user";
 
 export interface VenterDocument extends Document {
-    vender:Types.ObjectId;
+    vender:Types.ObjectId| UserDocument;
     type:Types.ObjectId;
     address:string;
     name: string;
@@ -10,6 +11,7 @@ export interface VenterDocument extends Document {
     price:number;
     state:string;
     verify:Boolean;
+    status:string;
   }
 const VenderSchema:Schema<VenterDocument>= new Schema(
   {
@@ -38,7 +40,12 @@ const VenderSchema:Schema<VenterDocument>= new Schema(
         type: String,
         require: true,
     },
- 
+    status:{
+      type: String,
+      require: true,
+      default:'pending'
+  },
+
     price:{
        type:Number,
     },

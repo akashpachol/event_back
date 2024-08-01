@@ -55,6 +55,27 @@ const transporter = nodemailer.createTransport({
     }
    
   };
+
+  export const sendService = async (name:string|undefined,phone:string,email:string|undefined) => {
+    try {
+      const mailOptions = {
+        from: 'pigabo40@gmail.com',
+        to: email,
+        subject: 'For booking service',
+        html: `<p>Hello,${name} IS BOOKED event, </p>
+        <p>Phone number: <strong>${phone}</strong> .</p>
+        `,
+      };
+
+       const information=await  transporter.sendMail( mailOptions);
+
+       return true
+ 
+    } catch (error) {
+      console.log(error);
+    }
+   
+  };
   
 
   

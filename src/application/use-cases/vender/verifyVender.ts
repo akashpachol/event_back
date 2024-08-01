@@ -3,13 +3,6 @@ import { venderRepositoryMongoDBType } from "../../../framework/database/mongodb
 import { HttpStatus } from "../../../types/httpStatus";
 import AppError from "../../../utils/appError";
 
-
-
-
-
-
-
-
 export const verifyVender = async (
     venderId: string,
     repository: ReturnType<venderRepositoryMongoDBType>
@@ -37,8 +30,37 @@ export const verifyVender = async (
       let value={verify:true}
   
           const venders = await repository.getAllVerifyVenderDb(value)
+          let checkVenders=venders.filter((value)=>{
+            return   value.vender.isBlocked===false
+          })
       
           
-          return venders
+          return checkVenders
       }
   
+
+      export const venderFilter=async (value:string[],  repository: ReturnType<venderRepositoryMongoDBType>)=>{
+
+            const venders = await repository.filterVendersDb(value)
+  
+       
+        
+            
+            return venders
+        }
+
+
+        export  const verifyVenderWithIdGet=async (  venderId: string,
+          repository:ReturnType<venderRepositoryMongoDBType>)=>{
+        if(!venderId){
+          throw new AppError('Somthing went wrong ', HttpStatus.UNAUTHORIZED)
+        }
+       
+        
+    
+          const data =await repository.getVenderByIdDb(venderId);
+   
+          return data;
+     
+        
+          }

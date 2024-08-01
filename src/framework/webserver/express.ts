@@ -9,14 +9,13 @@ declare module 'express-session' {
         otp?: string;
         otpGeneratedTime?: number;
         email: string;
-        userData?: { username: string; email: string; password: string };
+        // userData?: { username: string; email: string; password: string };
     }   
 }
 
 const expressConfig = (app: Application) => {
     const sessionSecret = process.env.SESSION_SECRET || "default_secret_key";
 
-    // Session middleware configuration
     app.use(session({
         secret: sessionSecret,
         resave: false,

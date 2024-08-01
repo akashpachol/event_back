@@ -32,10 +32,8 @@ export const locationAdd = async (
     throw new AppError("Please fill all the fields", HttpStatus.NOT_ACCEPTABLE);
   }
 
-  console.log(location, "kkkk");
 
   const data = await repository.createLocationDb(location);
-  console.log(data,"sljdslj");
   
   return true;
 };
@@ -56,7 +54,6 @@ export const LocationDetails = async (
   location_id: string,
   repository: ReturnType<locationRepositoryMongoDBType>
 ) => {
-  console.log(location_id,"jjk");
   
   if (!location_id) {
     throw new AppError("Please fill all the fields", HttpStatus.NOT_ACCEPTABLE);
@@ -88,7 +85,6 @@ export const locationEdit = async (
   } = location;
 
   const id=location.id
-  console.log(id,"hgkhgkj",location);
   
   if(!id){
 

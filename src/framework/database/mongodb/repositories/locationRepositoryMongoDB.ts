@@ -1,8 +1,10 @@
+import { Types } from "mongoose";
 import {
   CreateLocationInterface,
   LocationInterface,
 } from "../../../../entities/locationInterface";
 import Location from "../models/location";
+import { UserDocument } from "../models/user";
 export interface Image {
   url: string;
   type: string; // Optionally include type if needed
@@ -14,7 +16,6 @@ export const locationRepositoryMongoDB = () => {
       ?     locationData.image.map((image: Image) =>{url:image.url} )
 
       : [];
-      console.log(imageUrls,"llll");
       
     const newLocation = new Location({
       type: locationData.type,
@@ -30,7 +31,7 @@ export const locationRepositoryMongoDB = () => {
     return await newLocation.save();
   };
 
-  const getLocationbyManagerIdDb = async (manager: string) => {
+  const getLocationbyManagerIdDb = async (manager: string|Types.ObjectId ) => {
     return await Location.find({ manager });
   };
   const getLocationbyIdDb = async (id: string) => {
@@ -45,8 +46,49 @@ export const locationRepositoryMongoDB = () => {
   const getLocationByIdValueDb = async (id: string) =>
     await Location.findById(id);
   const getAllVerifyLocationDb = async (value: object) =>
-    await Location.find(value);
+    await Location.find(value).populate<{ manager: UserDocument }>('manager');
 
+  const addOfferToLocation = async (locationData: CreateLocationInterface[], discountValue: number, startDate: Date, expiryDate: Date, isActive: boolean) => {
+    for (const location of locationData) {
+      let discount = 0;
+      
+      if (!isActive) {
+        location.discountPrice = location.price;
+      } else {
+        discount = (location.price * discountValue) / 100;
+  
+        location.discountPrice = calculateDiscountPrice(
+          location.price,
+          discountValue
+        );
+      }
+      
+      await Location.updateOne(
+        { _id: location._id },
+        {
+          $set: {
+            discountPrice: location.discountPrice,
+            discount,
+            discountStart: startDate,
+            discountEnd: expiryDate,
+            discountStatus: true,
+          },
+        }
+      );
+    }
+  }
+  
+  
+    function calculateDiscountPrice(price:number, discountValue:number) {
+
+      let discountedPrice = price;
+    
+      
+        discountedPrice -= (price * discountValue) / 100;
+      
+    
+      return discountedPrice;
+    }
 
   
   return {
@@ -55,7 +97,8 @@ export const locationRepositoryMongoDB = () => {
     verifyLocationDb,
     getLocationByIdValueDb,
     getAllVerifyLocationDb,
-    getLocationbyIdDb
+    getLocationbyIdDb,
+    addOfferToLocation
   };
 };
 

@@ -10,7 +10,10 @@ export interface UserDocument extends Document {
   isBlocked: boolean;
   isGoogle: boolean;
   isBlock:boolean,
-  role:string
+  role:string,
+  refreshToken:string,
+  isAdmin:boolean,
+  refreshTokenExpiresAt:Date
 }
 
 const userSchema: Schema<UserDocument> = new Schema(
@@ -46,6 +49,19 @@ const userSchema: Schema<UserDocument> = new Schema(
     image: {
       type: String,
     },
+    refreshToken: {
+      type: String,
+      default: null,
+  },
+  isAdmin: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
+  refreshTokenExpiresAt: {
+      type: Date,
+      default: null,
+  },
    
   },
   {

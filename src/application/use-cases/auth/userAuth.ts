@@ -3,7 +3,7 @@ import { HttpStatus } from "../../../types/httpStatus";
 import AppError from "../../../utils/appError";
 import  { UserEntityType } from "../../../entities/user";
 import {sendVerifyMail} from "../../../utils/mailler";
-import { UserRepositoryMongoDB } from "../../../framework/database/mongodb/repositories/userRepositoryMongoDB";
+import { UserRepositoryMongoDBType } from "../../../framework/database/mongodb/repositories/userRepositoryMongoDB";
 import { AuthService } from "../../../framework/services/authService";
 
 
@@ -20,7 +20,7 @@ export const userRegister = async (
     password: string;
     role:string
   },
-  userRepository: ReturnType<UserRepositoryMongoDB>,
+  userRepository: ReturnType<UserRepositoryMongoDBType>,
   authService: ReturnType<AuthService>
 ) => {
   try {
@@ -51,23 +51,28 @@ export const resendOtp = async (
   
   authService: ReturnType<AuthService>
 ) => {
-  if (!userData || userData.email !== email) {
-    throw new AppError("User data not found", HttpStatus.UNAUTHORIZED);
+  try{
+    if (!userData || userData.email !== email) {
+      throw new AppError("User data not found", HttpStatus.UNAUTHORIZED);
+    }
+  
+    const otpValue = await authService.generateOTP();
+    otp = otpValue;
+    console.log(otp, "sessionOTP");
+    otpGeneratedTime = Date.now();
+  
+    await sendVerifyMail(email, otp);
+  
+    return { otp };
+  } catch (error) {
+    throw new AppError("something wrong", HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
-  const otpValue = await authService.generateOTP();
-  otp = otpValue;
-  console.log(otp, "sessionOTP");
-  otpGeneratedTime = Date.now();
-
-  await sendVerifyMail(email, otp);
-
-  return { otp };
 };
 
 export const verifyOTP = async (
   inputOtp: string,
-  userRepository: ReturnType<UserRepositoryMongoDB>,
+  userRepository: ReturnType<UserRepositoryMongoDBType>,
   authService: ReturnType<AuthService>
 ) => {
   if (!inputOtp) {
@@ -104,16 +109,18 @@ export const verifyOTP = async (
 
   const createdUser: any = await userRepository.addUser(userEntity);
 
-  const token = authService.generateToken(createdUser._id.toString());
+  const token = authService.generateToken(createdUser._id.toString(),createdUser.role);
+  const refreshToken = authService.generateRefreshToken(createdUser._id.toString(),createdUser.role);
+  await authService.addRefreshTokenAndExpiry(createdUser.email as string, refreshToken);
 
-  return { token, user: createdUser.username, userId: createdUser._id };
+  return { token,refreshToken, user: createdUser.username, userId: createdUser._id };
 };
 
 export const loginUser = async (
   email: string,
   password: string,
   role:string,
-  userRepository: ReturnType<UserRepositoryMongoDB>,
+  userRepository: ReturnType<UserRepositoryMongoDBType>,
   authService: ReturnType<AuthService>
 ) => {
   const user = await userRepository.getUserByEmail(email,role);
@@ -135,9 +142,13 @@ export const loginUser = async (
     throw new AppError("Incorrect password", HttpStatus.UNAUTHORIZED);
   }
 
-  const token = authService.generateToken(user._id.toString());
+  const token = authService.generateToken(user._id.toString(),role);
 
-  return { token, user: user.username, userId: user._id };
+
+  const refreshToken = authService.generateRefreshToken(user._id.toString(),role);
+  await authService.addRefreshTokenAndExpiry(user.email as string, refreshToken);
+
+  return { token,refreshToken, user: user.username, userId: user._id };
 };
 
 export const authGoogle = async (
@@ -146,7 +157,7 @@ export const authGoogle = async (
     email: string;
     role:string
   },
-  userRepository: ReturnType<UserRepositoryMongoDB>,
+  userRepository: ReturnType<UserRepositoryMongoDBType>,
   authService: ReturnType<AuthService>
 ) => {
   const userEntity = {
@@ -158,15 +169,17 @@ export const authGoogle = async (
 
   const createdUser: any = await userRepository.addGoogleUser(userEntity);
 
-  const token = authService.generateToken(createdUser._id.toString());
+  const token = authService.generateToken(createdUser._id.toString(),userData.role);
+  const refreshToken = authService.generateRefreshToken(createdUser._id.toString(),userData.role);
+  await authService.addRefreshTokenAndExpiry(userData.email as string, refreshToken);
 
-  return { token, user: createdUser.username, userId: createdUser._id };
+  return { token,refreshToken, user: createdUser.username, userId: createdUser._id,role:createdUser.role };
 };
 
 export const forgot = async (
   email: string,
   role:string,
-  userRepository: ReturnType<UserRepositoryMongoDB>,
+  userRepository: ReturnType<UserRepositoryMongoDBType>,
   authService: ReturnType<AuthService>
 ) => {
   const user = await userRepository.getUserByEmail(email,role);
@@ -191,7 +204,7 @@ export const forgot = async (
 
 export const reset = async (
   newPassword: string,
-  userRepository: ReturnType<UserRepositoryMongoDB>,
+  userRepository: ReturnType<UserRepositoryMongoDBType>,
   authService: ReturnType<AuthService>
 ) => {
   if (!userData?.email ) {
@@ -250,4 +263,35 @@ export const forgotVerifyOTP = async (
 
   return { otp };
 };
+
+export const handleRefreshAccessToken=async(  refreshToken: string,
+  userRepository: ReturnType<UserRepositoryMongoDBType>,
+  authService: ReturnType<AuthService>)=>{
+  
+    if (!refreshToken) {
+      throw new AppError("Invalid token!", HttpStatus.UNAUTHORIZED);
+    }
+
+    const { userId, role } = authService.verifyRefreshToken(refreshToken.toString());
+    if (!userId || !role ) {
+      throw new AppError("Invalid token!2", HttpStatus.UNAUTHORIZED);
+    }
+    
+    const user = await userRepository.getUserById(userId);
+    
+    if (!user?.refreshToken && !user?.refreshTokenExpiresAt) {
+      throw new AppError("Invalid token!3", HttpStatus.UNAUTHORIZED);
+    }
+    if (user) {
+      const expiresAt = user.refreshTokenExpiresAt.getTime();
+      if (Date.now() > expiresAt) {
+        throw new AppError("Invalid token!4", HttpStatus.UNAUTHORIZED);
+      }
+    }
+    const newAccessToken = authService.generateToken(userId,user.role);
+ 
+    
+    return {newAccessToken,role:user.role,user:user.username,userId};
+  
+  }
 

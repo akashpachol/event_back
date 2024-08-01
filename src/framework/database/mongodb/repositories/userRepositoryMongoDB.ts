@@ -3,10 +3,14 @@ import { CreateUserInterface } from "../../../../entities/userinterfaces";
 import { UserEntityType } from "../../../../entities/user";
 import bcrypt from "bcrypt";
 import { sendPassword } from "../../../../utils/mailler";
+import mongoose from "mongoose";
 
 export const userRepositoryMongoDB = () => {
-  const getUserByEmail = async (email: string,role:string) => {
-    const user: CreateUserInterface | null = await User.findOne({ email,role });
+  const getUserByEmail = async (email: string, role: string) => {
+    const user: CreateUserInterface | null = await User.findOne({
+      email,
+      role,
+    });
 
     return user;
   };
@@ -34,7 +38,7 @@ export const userRepositoryMongoDB = () => {
       throw new Error("role is required");
     }
 
-    const existingUser: any = await getUserByEmail(user.email,user.role);
+    const existingUser: any = await getUserByEmail(user.email, user.role);
 
     if (existingUser) {
       if (existingUser.isGoogle) {
@@ -51,7 +55,7 @@ export const userRepositoryMongoDB = () => {
       }
     }
     const randomPassword = Math.random().toString(36).slice(-8);
-   
+
     await sendPassword(user.email, randomPassword);
     const hashedPassword = await bcrypt.hash(randomPassword, 10);
     const newUser: any = new User({
@@ -67,27 +71,68 @@ export const userRepositoryMongoDB = () => {
   };
 
   const getUserById = async (id: string) => await User.findById(id);
+  const getManger = async (role: string) => await User.find({ role });
+  const getAllPerson = async (role: string,userId:string) => {
+    return await User.find({ role: { $ne: role } ,_id:{$ne:userId}});
+  };
+  
 
   const updateUserByProperty = async (id: string, updates: any) => {
-
-
     const user: CreateUserInterface | null = await User.findByIdAndUpdate(
       id,
       updates,
       { new: true }
     );
 
-
-    console.log(updates, "jhfjdk",user);
+    console.log(updates, "jhfjdk", user);
     return user;
   };
 
   const changeProfileImg = async (id: string, url: string) =>
-    await User.findByIdAndUpdate(
+     await User.findByIdAndUpdate(
       id,
       { $set: { image: url } },
       { upsert: true, new: true }
     );
+    interface UserQuery {
+      $or?: {
+        username?: { $regex: string; $options: string };
+        email?: { $regex: string; $options: string };
+      }[];
+      role?: { $ne?: string; $eq?: string };
+      _id?: { $ne: mongoose.Types.ObjectId };
+    }
+    
+    const searchValue = async (data: string | undefined, role: string, id: string) => {
+      const query: UserQuery = {};
+    
+      if (data) {
+        query.$or = [
+          { username: { $regex: data, $options: "i" } },
+          { email: { $regex: data, $options: "i" } },
+        ];
+      }
+    
+      if (role === 'admin') {
+        query.role = { $ne: 'admin' };
+      } else {
+        query.role = { $eq: role };
+      }
+    
+      if (id) {
+        query._id = { $ne: new mongoose.Types.ObjectId(id) };
+      }
+    
+      try {
+        const users = await User.find(query).exec(); 
+        console.log(users);
+        return users;
+      } catch (error) {
+        console.error("Error in searching users", error);
+        throw new Error("Unable to search users");
+      }
+    };
+    
 
   return {
     getUserByEmail,
@@ -97,7 +142,10 @@ export const userRepositoryMongoDB = () => {
     updateUserByProperty,
     changeProfileImg,
     getAllUsers,
+    searchValue,
+    getManger,
+    getAllPerson
   };
 };
 
-export type UserRepositoryMongoDB = typeof userRepositoryMongoDB;
+export type UserRepositoryMongoDBType = typeof userRepositoryMongoDB;

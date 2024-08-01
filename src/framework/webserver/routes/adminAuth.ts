@@ -13,6 +13,7 @@ export default function adminAuthRoute() {
     userRepositoryMongoDB,);
 
   router.post('/', controller.handleAdminLogin)
+  router.post('/refreshAccessToken', controller.refreshAccessToken)
 
   return router;
 }

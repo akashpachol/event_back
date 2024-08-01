@@ -1,38 +1,40 @@
-import  mongoose, { Schema,Types,model } from "mongoose";
+import mongoose, { Schema, Types, model, Document } from "mongoose";
+
 export interface Image {
   url: string;
 }
+
 export interface LocationDocument extends Document {
-    manager:Types.ObjectId;
-    address:string;
-    name: string;
-    description: string;
-    image:Image[];
-    capasity:number;
-    price:number;
-    state:string;
-    verify:Boolean;
-    isBlocked:Boolean;
-    type: Types.ObjectId[];
+  manager: Types.ObjectId;
+  address: string;
+  name: string;
+  description: string;
+  image: Image[];
+  capasity: number;
+  price: number;
+  discountPrice: number;
+  state: string;
+  verify: boolean;
+  isBlocked: boolean;
+  type: Types.ObjectId[];
+  discount?: number;
+  discountStart?: Date;
+  discountEnd?: Date;
+}
 
-  }
-
-
-  
-const locationSchema:Schema<LocationDocument>= new Schema(
+const locationSchema: Schema<LocationDocument> = new Schema(
   {
-    manager:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
+    manager: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
     },
-
     type: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Event',
       required: true
     }],
-     name: {
+    name: {
       type: String,
       required: true,
     },
@@ -45,28 +47,39 @@ const locationSchema:Schema<LocationDocument>= new Schema(
         { url: String }
       ]
     },
-    address:{
-        type: String,
-        require: true,
+    address: {
+      type: String,
+      required: true,
     },
-    capasity:{
-        type:Number,
-
+    capasity: {
+      type: Number,
     },
-    price:{
-       type:Number,
+    price: {
+      type: Number,
     },
-    state:{
-   type:String
+    discountPrice: {
+      type: Number,
+    
     },
- 
-    verify:{
+    state: {
+      type: String,
+    },
+    verify: {
       type: Boolean,
       default: false,
     },
-    isBlocked:{
+    isBlocked: {
       type: Boolean,
       default: false,
+    },
+    discount: {
+      type: Number,
+    },
+    discountStart: {
+      type: Date,
+    },
+    discountEnd: {
+      type: Date,
     }
   },
   {
@@ -74,6 +87,5 @@ const locationSchema:Schema<LocationDocument>= new Schema(
   }
 );
 
-const Location = model("location", locationSchema);
-
+const Location = model("Location", locationSchema);
 export default Location;

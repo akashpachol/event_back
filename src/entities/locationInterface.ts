@@ -11,7 +11,11 @@ export interface LocationInterface {
     price:number;
     state:string;
     type:string;
-    verify?:boolean
+    verify?:boolean,
+    discountPrice?:number,
+    discount?:number,
+    discountStart?:Date,
+    discountEnd?:Date
   }
   export interface CreateLocationInterface {
     _id?: Types.ObjectId |undefined,
@@ -23,5 +27,9 @@ export interface LocationInterface {
     capasity:number;
     price:number;
     state:string;
-    verify?:boolean
+    verify?:Boolean,
+    discountPrice?:number,
+    discount?:number,
+    discountStart?:Date,
+    discountEnd?:Date
 }

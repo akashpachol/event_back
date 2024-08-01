@@ -9,15 +9,16 @@ import { VenderWithIdGet, venderAdd, venderEdit } from "../../../application/use
 import { HttpStatus } from "../../../types/httpStatus";
 import { VenderTypeBlock, VenderTypeGet, venderTypeAdd, venderTypeEdit } from "../../../application/use-cases/vender/venderTypeAdd";
 import { venderTypeInterface } from "../../../entities/venderTypeInterface";
-import { verifyVender, verifyVenderGet } from "../../../application/use-cases/vender/verifyVender";
+import { venderFilter, verifyVender, verifyVenderGet, verifyVenderWithIdGet } from "../../../application/use-cases/vender/verifyVender";
+import { UserRepositoryMongoDBType } from "../../../framework/database/mongodb/repositories/userRepositoryMongoDB";
 
 
 export const venderController = (
-
+  userDbRepositoryImpl: UserRepositoryMongoDBType,
   venderRepoimpl: venderRepositoryMongoDBType
 ) => {
   const repository = venderRepoimpl();
-
+  const dbRepositoryUser = userDbRepositoryImpl();
 
   const addVender = expressAsyncHandler(
     async (req: Request, res: Response) => {
@@ -52,7 +53,6 @@ export const venderController = (
   const addVenderType = expressAsyncHandler(
     async (req: Request, res: Response) => {
       const vender: venderTypeInterface = req.body;
-      console.log(vender,"fdgfjdhfhfgd");
       
       const response = await venderTypeAdd(vender, repository);
 
@@ -88,7 +88,7 @@ export const venderController = (
 
     res.status(HttpStatus.OK).json({
       status: "success",
-      message: "get all event",
+      message: "get all vender type",
       data
     });
 
@@ -111,12 +111,12 @@ export const venderController = (
     const venderId:string = req.params.venderId;
     
   
-    const data=await VenderWithIdGet(venderId,repository);
+    const data=await VenderWithIdGet(venderId,repository,dbRepositoryUser);
 
 
     res.status(HttpStatus.OK).json({
       status: "success",
-      message: "get all event",
+      message: "get all venders",
       data
     });
 
@@ -131,7 +131,7 @@ export const venderController = (
  
     res.status(HttpStatus.OK).json({
       status: "success",
-      message: "All users details has been fetched",
+      message: "verify vender",
       data
     });
   });
@@ -143,9 +143,38 @@ export const venderController = (
  
     res.status(HttpStatus.OK).json({
       status: "success",
-      message: "All users details has been fetched",
+      message: "get all venders",
       data
     });
+  });
+
+
+
+  const filterVender = expressAsyncHandler(async (req: Request, res: Response) => {
+    const value:string[] = req.body.type;
+    
+    const response=await venderFilter(value,repository)
+    
+    res.status(HttpStatus.OK).json({
+      status: "success",
+      message: "",
+      data:response
+    });
+  });
+
+  const getVerifyVenderWithId = expressAsyncHandler(async (req: Request, res: Response) => {
+    const venderId:string = req.params.venderId;
+    
+  
+    const data=await verifyVenderWithIdGet(venderId,repository);
+
+
+    res.status(HttpStatus.OK).json({
+      status: "success",
+      message: "verfied vender",
+      data
+    });
+
   });
 
 
@@ -158,6 +187,8 @@ export const venderController = (
     addVenderType,
     getVenderWithId,
     venderVerify,
-    getVerifyVender
+    getVerifyVender,
+    filterVender,
+    getVerifyVenderWithId
   };
 };

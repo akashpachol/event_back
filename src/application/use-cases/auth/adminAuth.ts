@@ -2,16 +2,16 @@ import { HttpStatus } from "../../../types/httpStatus";
 import AppError from "../../../utils/appError";
 
 import { AuthService } from "../../../framework/services/authService";
-import { UserRepositoryMongoDB } from "../../../framework/database/mongodb/repositories/userRepositoryMongoDB";
+import { UserRepositoryMongoDBType } from "../../../framework/database/mongodb/repositories/userRepositoryMongoDB";
 
 
 
-export const adminLogin = async (email: string, password: string,role:string, services:ReturnType<AuthService>, userRepository: ReturnType<UserRepositoryMongoDB>, ) =>{
+export const adminLogin = async (email: string, password: string,role:string, services:ReturnType<AuthService>, userRepository: ReturnType<UserRepositoryMongoDBType>, ) =>{
     
-  console.log(email,role);
   
   const user = await userRepository.getUserByEmail(email,role);
 
+   console.log(user,'gjkfjgkf');
    
     if (!user ) {
         throw new AppError("User not found", HttpStatus.UNAUTHORIZED);
@@ -22,7 +22,6 @@ export const adminLogin = async (email: string, password: string,role:string, se
       if (user.role !=='admin') {
         throw new AppError("User is NOT FOUND", HttpStatus.FORBIDDEN);
       }
-      console.log(user.password,"akkakak");
       
       const isPasswordCorrect = await services.comparePassword(
         password,
@@ -37,9 +36,46 @@ export const adminLogin = async (email: string, password: string,role:string, se
   
   
   
-      const token = services.generateToken(user._id.toString());
-
-    return { token, user: user?.username,userId:user._id };
+      const token = services.generateToken(user._id.toString(),user.role);
+      const refreshToken = services.generateRefreshToken(user._id.toString(),user.role);
+      await services.addRefreshTokenAndExpiry(user.email as string, refreshToken);
+    return { token,refreshToken, user: user?.username,userId:user._id };
 
 
 }
+
+
+
+
+
+
+export const handleRefreshAccessToken=async(  refreshToken: string,
+  userRepository: ReturnType<UserRepositoryMongoDBType>,
+  authService: ReturnType<AuthService>)=>{
+  
+    if (!refreshToken) {
+      throw new AppError("Invalid token!", HttpStatus.UNAUTHORIZED);
+    }
+
+    const { userId, role } = authService.verifyRefreshToken(refreshToken.toString());
+    if (!userId || !role ) {
+      throw new AppError("Invalid token!2", HttpStatus.UNAUTHORIZED);
+    }
+    
+    const user = await userRepository.getUserById(userId);
+    
+    if (!user?.refreshToken && !user?.refreshTokenExpiresAt) {
+      throw new AppError("Invalid token!3", HttpStatus.UNAUTHORIZED);
+    }
+    if (user) {
+      const expiresAt = user.refreshTokenExpiresAt.getTime();
+      if (Date.now() > expiresAt) {
+        throw new AppError("Invalid token!4", HttpStatus.UNAUTHORIZED);
+      }
+    }
+    const newAccessToken = authService.generateToken(userId,user.role);
+ 
+    
+    return {newAccessToken,user:user.username,userId};
+  
+  }

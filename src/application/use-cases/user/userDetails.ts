@@ -1,4 +1,4 @@
-import { UserRepositoryMongoDB } from "../../../framework/database/mongodb/repositories/userRepositoryMongoDB";
+import { UserRepositoryMongoDBType } from "../../../framework/database/mongodb/repositories/userRepositoryMongoDB";
 import { HttpStatus } from "../../../types/httpStatus";
 
 import AppError from "../../../utils/appError";
@@ -21,7 +21,7 @@ export  function removePasswordField(object: any){
 export const getUserProfile = async (
    
     userId:string,
-    userRepository: ReturnType<UserRepositoryMongoDB>,
+    userRepository: ReturnType<UserRepositoryMongoDBType>,
           
   ) => {
     
@@ -45,7 +45,7 @@ export const getUserProfile = async (
       phone: string;
  
     },
-    userRepository: ReturnType<UserRepositoryMongoDB>
+    userRepository: ReturnType<UserRepositoryMongoDBType>
   ) => {
     if (!updates) {
       throw new AppError(
@@ -64,7 +64,7 @@ export const getUserProfile = async (
     return data;
   };
 
-  export const updateProfileImg = async (id:string, url: string, repository:ReturnType<UserRepositoryMongoDB>) =>{
+  export const updateProfileImg = async (id:string, url: string, repository:ReturnType<UserRepositoryMongoDBType>) =>{
 
     if(!id || !url){
       throw new AppError("Somthing went wrong", HttpStatus.BAD_REQUEST);
@@ -75,7 +75,7 @@ export const getUserProfile = async (
   }
 
 
-  export const getAllUsers =async ( userRepository : ReturnType<UserRepositoryMongoDB>,value:object) => {
+  export const getAllUsers =async ( userRepository : ReturnType<UserRepositoryMongoDBType>,value:object) => {
     const users = await userRepository.getAllUsers(value)
 
     const data =  users.map( user => removePasswordField(user))
@@ -83,7 +83,7 @@ export const getUserProfile = async (
     return data
 }
 
-export const blockuser =async (    userId: string, userRepository : ReturnType<UserRepositoryMongoDB>) => {
+export const blockuser =async (    userId: string, userRepository : ReturnType<UserRepositoryMongoDBType>) => {
 
 
 
@@ -110,12 +110,36 @@ if(!user.isBlocked){
 
   
   let data= removePasswordField(user)
-  console.log(data,"kkkkkkkkkdsdsds");
+
 
   return {data,message:'user Unblocked succesfully'}
 }
 }
   
+
+export const getSerachData = async (
+   
+  search:string|undefined,
+  role:string,
+  id:string,
+  userRepository: ReturnType<UserRepositoryMongoDBType>,
+        
+) => {
+  
+  if(!search){
+      throw new AppError('Somthing went wrong please ', HttpStatus.UNAUTHORIZED)
+  }
+
+const user = await userRepository.searchValue(search, role,id);
+
+
+
+    return  user ;
+  
+};
+
+
+
 
 
      

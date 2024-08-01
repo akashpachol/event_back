@@ -1,0 +1,19 @@
+import express from "express";
+import jwtTokenVerification from "../middleware/jwtTokenVerification";
+import { messageController } from "../../../adapters/controllers/message/messageController";
+import { messageRepositoryMongoDB } from "../../database/mongodb/repositories/messageRepositoryMongodb";
+import { chatRepositoryMongoDB } from "../../database/mongodb/repositories/chatRepositoryMongoDB";
+export const messageRouter = () => {
+  const router = express.Router();
+  const controller = messageController(messageRepositoryMongoDB,chatRepositoryMongoDB);
+
+  router
+    .route("/")
+    .post(jwtTokenVerification, controller.sendMessage)
+    .get(controller.allMesaages);
+    router.post('/getUnreadMessagesFromChat',jwtTokenVerification,controller.getUnreadMessagesFromChat)
+    router.patch('/setUnreadMessagesRead',jwtTokenVerification,controller.setUnreadMessagesRead)
+    router.get('/getAllUnreadMessages',jwtTokenVerification,controller.getAllUnreadMessages)
+
+  return router;
+};

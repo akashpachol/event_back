@@ -1,6 +1,7 @@
 import { Types } from "mongoose"
 export interface UserInterface {
   
+    isAdmin:boolean;
     email: string;
     username: string;
     password: string;
@@ -12,13 +13,14 @@ export interface UserInterface {
 }
 
 export interface CreateUserInterface {
-    _id?: Types.ObjectId |undefined,
+    _id: string,
     email: string;
     username: string;
     password: string;
     phone?: string | null;
     isBlocked?: boolean;
     isGoogle?:boolean;
-    role?:string
+    role?:string;
+    isAdmin:boolean;
 }
 

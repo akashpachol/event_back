@@ -2,6 +2,7 @@ import express from "express";
 import { locationController } from "../../../adapters/controllers/location/locationController";
 
 import { locationRepositoryMongoDB } from "../../database/mongodb/repositories/locationRepositoryMongoDB";
+import jwtTokenVerification from "../middleware/jwtTokenVerification";
 export const  locationRouter=()=>{
     const router = express.Router();
     const controller=locationController(locationRepositoryMongoDB)

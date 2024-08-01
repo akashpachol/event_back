@@ -1,10 +1,10 @@
 import {  Request, Response } from "express"
 import asyncHandler from "express-async-handler";
-import { UserRepositoryMongoDB } from "../../../framework/database/mongodb/repositories/userRepositoryMongoDB";
+import { UserRepositoryMongoDBType } from "../../../framework/database/mongodb/repositories/userRepositoryMongoDB";
 import { HttpStatus } from "../../../types/httpStatus";
 import { blockuser,getAllUsers } from "../../../application/use-cases/user/userDetails";
 export default function adminController(
-    userDbRepositoryImpl: UserRepositoryMongoDB,
+    userDbRepositoryImpl: UserRepositoryMongoDBType,
   ) {
     const userRespository = userDbRepositoryImpl();
     const handleGetAllUsers = asyncHandler(
