@@ -16,6 +16,7 @@ import { bookEvent, capturepayment, payment } from "../../../application/use-cas
 import { getBookingDetail, getBookingHistory } from "../../../application/use-cases/booking/event/get";
 import { cancelBooking, checkStatus } from "../../../application/use-cases/booking/event/edit";
 import { bookVenderService, venderCapturepayment } from "../../../application/use-cases/booking/vender/create";
+import { getVenderBookingHistory } from "../../../application/use-cases/booking/vender/get";
 
 export const bookingController = (
   venderRepoimpl: venderRepositoryMongoDBType,
@@ -197,19 +198,19 @@ export const bookingController = (
     }
   );
 
-  // const bookingVenderHistory = expressAsyncHandler(
-  //   async (req: Request, res: Response) => {
-  //     const { userId } = req.params;
+  const bookingVenderHistory = expressAsyncHandler(
+    async (req: Request, res: Response) => {
+      const { userId } = req.params;
 
-  //     const { booking } = await getBookingVenderHistory(userId, bookingrepository);
+      const { booking } = await getVenderBookingHistory(userId, bookingrepository);
 
-  //     res.status(HttpStatus.OK).json({
-  //       status: "success",
-  //       message: "get Booking history",
-  //       data: booking,
-  //     });
-  //   }
-  // );
+      res.status(HttpStatus.OK).json({
+        status: "success",
+        message: "get Booking history",
+        data: booking,
+      });
+    }
+  );
 
   return {
     bookLocation,
@@ -221,5 +222,6 @@ export const bookingController = (
     bookingCancel,
     bookService,
     venderPaymentcapture,
+    bookingVenderHistory
   };
 };

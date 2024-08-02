@@ -7,16 +7,15 @@ import {
   getSerachData,
   getUserProfile,
   
+  managerGet,
+  
   updateProfileImg,
   updateUserProfile,
 } from "../../application/use-cases/user/userDetails";
-import {
-  managerGet,
-  verifyLocationGet,
-  walletGet,
-} from "../../application/use-cases/location/verifyLocation";
+
 import { locationRepositoryMongoDBType } from "../../framework/database/mongodb/repositories/locationRepositoryMongoDB";
 import { walletRepositoryMongoDBType } from "../../framework/database/mongodb/repositories/walletRepositoryMongoDB";
+import {  walletGet } from "../../application/use-cases/location/get";
 const userController = (
   userDbRepositoryImpl: UserRepositoryMongoDBType,
   locationDbRepositoryImpl: locationRepositoryMongoDBType,
@@ -67,17 +66,7 @@ const userController = (
     }
   );
 
-  const getVerifyLocation = asyncHandler(
-    async (req: Request, res: Response) => {
-      const data = await verifyLocationGet(dbRepositoryLocation);
 
-      res.status(HttpStatus.OK).json({
-        status: "success",
-        message: "All users details has been fetched",
-        data,
-      });
-    }
-  );
 
   const allUsers = asyncHandler(async (req: Request, res: Response) => {
     
@@ -132,7 +121,7 @@ console.log(role,id);
     handleGetUserProfile,
     handleUpdateUserProfile,
     handleUpdateProfileImage,
-    getVerifyLocation,
+
     getWallet,
     allUsers,
     getManger

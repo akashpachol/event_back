@@ -143,3 +143,23 @@ const user = await userRepository.searchValue(search, role,id);
 
 
      
+export const managerGet = async (
+  role: string,
+  userId: string,
+  repository: ReturnType<UserRepositoryMongoDBType>
+) => {
+  if (!role) {
+    throw new AppError("Please fill all the fields", HttpStatus.NOT_ACCEPTABLE);
+  }
+
+  let data;
+  console.log(role);
+
+  if (role == "admin") {
+    data = await repository.getAllPerson(role, userId);
+  } else {
+    data = await repository.getManger(role);
+  }
+
+  return data;
+};

@@ -22,7 +22,7 @@ const userRouter = () =>{
     .get(jwtTokenVerification, controller.handleGetUserProfile)  
     .patch(jwtTokenVerification, controller.handleUpdateUserProfile);
    
-    router.get('/getVerifyLocation',controller.getVerifyLocation)
+   
 
     router.patch('/profileimage/:userId',jwtTokenVerification, controller.handleUpdateProfileImage);
     router.get('/getWallet/:userId',jwtTokenVerification, controller.getWallet);

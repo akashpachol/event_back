@@ -5,8 +5,9 @@ import expressAsyncHandler from "express-async-handler";
 
 import { HttpStatus } from "../../../types/httpStatus";
 import { messageRepositoryMongoDBType } from "../../../framework/database/mongodb/repositories/messageRepositoryMongodb";
-import { getMessages, handleGetAllUnreadMessages, handleGetUnreadMessagesFromChat, handleSetUnreadMessagesRead, messageSend } from "../../../application/use-cases/message/message";
 import { chatRepositoryMongoDBType } from "../../../framework/database/mongodb/repositories/chatRepositoryMongoDB";
+import { getMessages, handleGetAllUnreadMessages, handleGetUnreadMessagesFromChat } from "../../../application/use-cases/message/get";
+import { handleSetUnreadMessagesRead, messageSend } from "../../../application/use-cases/message/create";
 
 export const messageController = (
   messageRepoimpl: messageRepositoryMongoDBType,

@@ -6,8 +6,10 @@ import { offerRepositoryMongoDBType } from "../../../framework/database/mongodb/
 import { HttpStatus } from "../../../types/httpStatus";
 import expressAsyncHandler from "express-async-handler";
 import { offerInterface } from "../../../entities/offerInterface";
-import { offerAdd, offerDelete, offerGet, offerUpdate } from "../../../application/use-cases/offer/offer";
 import { locationRepositoryMongoDBType } from "../../../framework/database/mongodb/repositories/locationRepositoryMongoDB";
+import { offerAdd } from "../../../application/use-cases/offer/create";
+import { offerDelete, offerUpdate } from "../../../application/use-cases/offer/edit";
+import { offerGet } from "../../../application/use-cases/offer/get";
 
 
 

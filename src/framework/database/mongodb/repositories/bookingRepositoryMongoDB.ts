@@ -128,6 +128,13 @@ export const bookingRepositoryMongoDB = () => {
     return result;
   };
 
+
+
+  const getvenderBookingHistory = async (data: object) =>
+    await BookingVender.find(data)
+      .populate<{ manager: UserDocument }>("manager")
+      .populate<{ user: UserDocument }>("user")
+      .populate<{ venderData: VenterDocument }>("venderData");
   
 
   return {
@@ -138,7 +145,8 @@ export const bookingRepositoryMongoDB = () => {
     checkAvailableSlot,
     editbookingDb,
     createVenderBookingDb,
-    editServicebookingDb
+    editServicebookingDb,
+    getvenderBookingHistory
   };
 };
 

@@ -3,9 +3,10 @@ import expressAsyncHandler from "express-async-handler";
 
 import { HttpStatus } from "../../../types/httpStatus";
 import { locationRepositoryMongoDBType } from "../../../framework/database/mongodb/repositories/locationRepositoryMongoDB";
-import { LocationDetails, LocationWithIdGet, locationAdd, locationEdit } from "../../../application/use-cases/location/locationAdd";
 import { LocationInterface } from "../../../entities/locationInterface";
-import { verifyLocation } from "../../../application/use-cases/location/verifyLocation";
+import { locationAdd } from "../../../application/use-cases/location/create";
+import { LocationDetails, LocationWithIdGet, verifyLocationGet } from "../../../application/use-cases/location/get";
+import { locationEdit, verifyLocation } from "../../../application/use-cases/location/edit";
 
 export const locationController = (
 
@@ -72,7 +73,17 @@ const location=req.body
       data
     });
   });
+  const getVerifyLocation = expressAsyncHandler(
+    async (req: Request, res: Response) => {
+      const data = await verifyLocationGet(repository);
 
+      res.status(HttpStatus.OK).json({
+        status: "success",
+        message: "All users details has been fetched",
+        data,
+      });
+    }
+  );
 
 
 
@@ -83,6 +94,7 @@ const location=req.body
     getLocationWithId,
     LocationVerify,
     editLocation,
-    getLocationDetails
+    getLocationDetails,
+    getVerifyLocation
   };
 };

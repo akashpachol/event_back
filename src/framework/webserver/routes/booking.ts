@@ -60,5 +60,11 @@ export const bookingRouter = () => {
   );
 
 
+  router.get(
+    "/bookingVenderHistory/:userId",
+    jwtTokenVerification,
+    controller.bookingVenderHistory
+  );
+
   return router;
 };

@@ -13,6 +13,7 @@ export const  locationRouter=()=>{
     router.get('/getLocationDetails/:locationId', controller.getLocationDetails);
     router.post('/verfyLocation', controller.LocationVerify);
     router.put('/editLocation', controller.editLocation);
+    router.get('/getVerifyLocation',controller.getVerifyLocation)
 
     return router
 }
