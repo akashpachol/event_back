@@ -4,6 +4,7 @@ import {
   } from "../../../../entities/bookingInterface";
   
   import { bookingRepositoryMongoDBType } from "../../../../framework/database/mongodb/repositories/bookingRepositoryMongoDB";
+import { NotificationRepositoryMongoDbType } from "../../../../framework/database/mongodb/repositories/notificationRepositoryMongoDB ";
   
   import { venderRepositoryMongoDBType } from "../../../../framework/database/mongodb/repositories/venterRepositoryMongoDB";
   import { HttpStatus } from "../../../../types/httpStatus";
@@ -76,7 +77,8 @@ import {
     venderData: bookingVenderInterface,
     paymentId: string,
     amountData: number,
-    bookingrepository: ReturnType<bookingRepositoryMongoDBType>
+    bookingrepository: ReturnType<bookingRepositoryMongoDBType>,
+    notificationrepository:ReturnType<NotificationRepositoryMongoDbType>,
   ) => {
     try {
       console.log(
@@ -103,6 +105,14 @@ import {
         venderData = { ...venderData, status: "booked" };
   
         const result = await bookingrepository.createVenderBookingDb(venderData);
+
+        const notificationData={
+          receiverId:venderData.vender,
+          senderId:venderData.manager,
+          event:venderData.status,
+          bookingVender:result._id
+        }
+        const notification = await notificationrepository.createNotification(notificationData);
         service = result;
         console.log("Booking created successfully:", result);
       } else {

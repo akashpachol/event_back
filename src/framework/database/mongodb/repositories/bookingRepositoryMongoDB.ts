@@ -12,6 +12,7 @@ import { EventDocument } from "../models/event";
 import { LocationDocument } from "../models/location";
 import { UserDocument } from "../models/user";
 import Vender, { VenterDocument } from "../models/vender";
+import Notification from "../models/notification";
 
 export const bookingRepositoryMongoDB = () => {
   const createBookingDb = async (booking: bookingInterface) => {
@@ -19,7 +20,6 @@ export const bookingRepositoryMongoDB = () => {
     let newBooking = new Booking(booking);
 
     await newBooking.save();
-
     return newBooking;
   };
   const getBookingHistory = async (data: object) =>
@@ -133,8 +133,33 @@ export const bookingRepositoryMongoDB = () => {
   const getvenderBookingHistory = async (data: object) =>
     await BookingVender.find(data)
       .populate<{ manager: UserDocument }>("manager")
-      .populate<{ user: UserDocument }>("user")
+      .populate<{ vender: UserDocument }>("vender")
       .populate<{ venderData: VenterDocument }>("venderData");
+
+
+
+      const getvenderBookingDetails = async (id: string) => {
+        try {
+         
+
+          const data = await BookingVender.findById(id)
+            .populate<{ manager: UserDocument }>("manager")
+            .populate<{ vender: UserDocument }>("vender")
+            .populate<{ venderData: LocationDocument }>("venderData")
+         
+           
+      
+          if (!data) {
+            throw new Error("Booking not found");
+          }
+      
+      
+          return data;
+        } catch (error) {
+          console.error("Error populating data: ", error);
+          throw error;
+        }
+      };
   
 
   return {
@@ -146,7 +171,8 @@ export const bookingRepositoryMongoDB = () => {
     editbookingDb,
     createVenderBookingDb,
     editServicebookingDb,
-    getvenderBookingHistory
+    getvenderBookingHistory,
+    getvenderBookingDetails
   };
 };
 

@@ -11,9 +11,10 @@ export const messageRouter = () => {
     .route("/")
     .post(jwtTokenVerification, controller.sendMessage)
     .get(controller.allMesaages);
-    router.post('/getUnreadMessagesFromChat',jwtTokenVerification,controller.getUnreadMessagesFromChat)
-    router.patch('/setUnreadMessagesRead',jwtTokenVerification,controller.setUnreadMessagesRead)
-    router.get('/getAllUnreadMessages',jwtTokenVerification,controller.getAllUnreadMessages)
+
+    router.patch('/deleteEveryOne',jwtTokenVerification, controller.deleteForEveryOneMessage);
+    router.patch('/deleteForMe',jwtTokenVerification, controller.deleteForMeMessage);
+
 
   return router;
 };

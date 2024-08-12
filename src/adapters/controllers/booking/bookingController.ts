@@ -16,20 +16,24 @@ import { bookEvent, capturepayment, payment } from "../../../application/use-cas
 import { getBookingDetail, getBookingHistory } from "../../../application/use-cases/booking/event/get";
 import { cancelBooking, checkStatus } from "../../../application/use-cases/booking/event/edit";
 import { bookVenderService, venderCapturepayment } from "../../../application/use-cases/booking/vender/create";
-import { getVenderBookingHistory } from "../../../application/use-cases/booking/vender/get";
+import { getMangerBookingDetail, getMangerBookingHistory, getVenderBookingHistory } from "../../../application/use-cases/booking/vender/get";
+import { NotificationRepositoryMongoDbType } from "../../../framework/database/mongodb/repositories/notificationRepositoryMongoDB ";
 
 export const bookingController = (
   venderRepoimpl: venderRepositoryMongoDBType,
   locationRepoimpl: locationRepositoryMongoDBType,
   bookingRepoimpl: bookingRepositoryMongoDBType,
   userRepoimpl: UserRepositoryMongoDBType,
-  walletRepoimpl: walletRepositoryMongoDBType
+  walletRepoimpl: walletRepositoryMongoDBType,
+  notificationRepoimpl:NotificationRepositoryMongoDbType,
+
 ) => {
   const locationrepository = locationRepoimpl();
   const venderrepository = venderRepoimpl();
   const bookingrepository = bookingRepoimpl();
   const usergrepository = userRepoimpl();
   const walletrepository = walletRepoimpl();
+  const  notificationrepository = notificationRepoimpl();
 
   let bookingData: bookingInterface | null = null;
   let venderServiceData: bookingVenderInterface | null = null;
@@ -61,7 +65,8 @@ export const bookingController = (
         return;
       }
 
-      const { order } = await payment(bookingData, bookingrepository);
+      const { order } = await payment(bookingData
+      );
 
       res.status(HttpStatus.OK).json({
         status: "success",
@@ -89,7 +94,8 @@ export const bookingController = (
         paymentId,
         amount,
         bookingrepository,
-        usergrepository
+        usergrepository,
+        notificationrepository
       );
 
       res.status(HttpStatus.OK).json({
@@ -147,7 +153,7 @@ export const bookingController = (
     async (req: Request, res: Response) => {
       const { reason, id } = req.body;
 
-      await cancelBooking(reason, id, bookingrepository, walletrepository);
+      await cancelBooking(reason, id, bookingrepository, walletrepository,notificationrepository);
 
       res.status(HttpStatus.OK).json({
         status: "success",
@@ -186,7 +192,7 @@ export const bookingController = (
         venderServiceData,
         paymentId,
         amount,
-        bookingrepository
+        bookingrepository,notificationrepository
       );
 
       res.status(HttpStatus.OK).json({
@@ -212,6 +218,34 @@ export const bookingController = (
     }
   );
 
+
+  const getMangerBooking = expressAsyncHandler(
+    async (req: Request, res: Response) => {
+      const { venderId } = req.params;
+
+      const { booking } = await getMangerBookingHistory(venderId, bookingrepository);
+
+      res.status(HttpStatus.OK).json({
+        status: "success",
+        message: "all booking history",
+        data: booking,
+      });
+    }
+  );
+  const getMangerbookingDetails = expressAsyncHandler(
+    async (req: Request, res: Response) => {
+      const { bookigId } = req.params;
+
+      const { booking } = await getMangerBookingDetail(bookigId, bookingrepository);
+
+      res.status(HttpStatus.OK).json({
+        status: "success",
+        message: "get Booking Details",
+        data: booking,
+      });
+    }
+  );
+
   return {
     bookLocation,
     paymentBooking,
@@ -222,6 +256,8 @@ export const bookingController = (
     bookingCancel,
     bookService,
     venderPaymentcapture,
-    bookingVenderHistory
+    bookingVenderHistory,
+    getMangerBooking,
+    getMangerbookingDetails
   };
 };

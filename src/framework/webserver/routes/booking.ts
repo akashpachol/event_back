@@ -7,6 +7,7 @@ import { locationRepositoryMongoDB } from "../../database/mongodb/repositories/l
 import { bookingRepositoryMongoDB } from "../../database/mongodb/repositories/bookingRepositoryMongoDB";
 import { userRepositoryMongoDB } from "../../database/mongodb/repositories/userRepositoryMongoDB";
 import { walletRepositoryMongoDB } from "../../database/mongodb/repositories/walletRepositoryMongoDB";
+import { notficationRepositoryMongoDb } from "../../database/mongodb/repositories/notificationRepositoryMongoDB ";
 export const bookingRouter = () => {
   const router = express.Router();
   const controller = bookingController(
@@ -14,7 +15,8 @@ export const bookingRouter = () => {
     locationRepositoryMongoDB,
     bookingRepositoryMongoDB,
     userRepositoryMongoDB,
-    walletRepositoryMongoDB
+    walletRepositoryMongoDB,
+    notficationRepositoryMongoDb,
 
   );
 
@@ -61,9 +63,15 @@ export const bookingRouter = () => {
 
 
   router.get(
-    "/bookingVenderHistory/:userId",
+    "/getMangerBooking/:venderId",
     jwtTokenVerification,
-    controller.bookingVenderHistory
+    controller.getMangerBooking
+  );
+
+  router.get(
+    "/getMangerbookingDetails/:bookigId",
+    jwtTokenVerification,
+    controller.getMangerbookingDetails
   );
 
   return router;

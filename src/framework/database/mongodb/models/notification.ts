@@ -6,7 +6,8 @@ interface notificationDocument extends Document {
   senderId: mongoose.Types.ObjectId;
   event: string;
   isSeen: boolean;
-  postId?:mongoose.Types.ObjectId
+  booking?:mongoose.Types.ObjectId;
+  bookingVender?:mongoose.Types.ObjectId;
 }
 
 
@@ -15,7 +16,9 @@ const NotificationSchema: Schema = new Schema({
   senderId: { type: mongoose.Types.ObjectId, required: true, ref: 'User' },
   event: { type: String, required: true},
   isSeen: { type: Boolean, required: true, default: false },
-  postId:{ type:mongoose.Types.ObjectId,ref:'Post',default:''}
+  booking:{ type:mongoose.Types.ObjectId,ref:'booking',},
+  bookingVender:{ type:mongoose.Types.ObjectId,ref:'bookingVender'}
+
 },{
     timestamps:true
 });

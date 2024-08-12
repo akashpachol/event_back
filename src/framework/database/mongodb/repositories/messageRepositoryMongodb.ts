@@ -14,7 +14,7 @@ export const messageRepositoryMongoDB = () => {
             {
               chatId:chatIdObj,
             isDeleted: {$ne:true},
-            deletedBy: { $ne: userObjectId }
+        
           })
             .populate(
               "sender",
@@ -39,6 +39,7 @@ export const messageRepositoryMongoDB = () => {
       sender: userId,
       chatId: chatId,
       content,
+      readBy:userId
     });
     try {
       const message = await Message.create(newMessage);
@@ -67,7 +68,6 @@ export const messageRepositoryMongoDB = () => {
             "-password  -refreshToken -refreshTokenExpiresAt "
           );
 
-          console.log(fullMessage,'fullMessage');
           
           //@ts-ignore
           const recieverId = fullMessage?.chatId?.users?.find(item => item.toString() !== fullMessage.sender._id.toString());
@@ -147,6 +147,34 @@ const setUnreadMessagesRead=async(chatId:string,userId:string)=>{
   }
 }
 
+
+
+
+
+
+const updateMessagedb = async (id: string, userId: string) => {
+  const userObjectId = new mongoose.Types.ObjectId(userId.trim());
+  const chatIdObj = new mongoose.Types.ObjectId(id.trim());
+  const message = await Message.updateMany(
+    { chatId: chatIdObj },
+    { $addToSet: {readBy:userObjectId} }
+  );
+  return message;
+};
+const deleteMessagedb = async ( messageId: string,data:any) => {
+  const messageObjectId = new mongoose.Types.ObjectId(messageId.trim());
+
+  const message = await Message.findByIdAndUpdate(
+    messageObjectId,
+    { $set:  data  },
+    { new: true }  
+  );
+
+  
+  return message;
+};
+
+
   return {
     messageGet,
     messageSend,
@@ -154,7 +182,9 @@ const setUnreadMessagesRead=async(chatId:string,userId:string)=>{
     getAllMessagesFromChat,
     setUnreadMessagesRead,
     getAllUnreadMessages,
-    getUnreadMessagesFromChat
+    getUnreadMessagesFromChat,
+    updateMessagedb,
+    deleteMessagedb
   };
 };
 

@@ -6,8 +6,9 @@ import expressAsyncHandler from "express-async-handler";
 import { HttpStatus } from "../../../types/httpStatus";
 import { messageRepositoryMongoDBType } from "../../../framework/database/mongodb/repositories/messageRepositoryMongodb";
 import { chatRepositoryMongoDBType } from "../../../framework/database/mongodb/repositories/chatRepositoryMongoDB";
-import { getMessages, handleGetAllUnreadMessages, handleGetUnreadMessagesFromChat } from "../../../application/use-cases/message/get";
-import { handleSetUnreadMessagesRead, messageSend } from "../../../application/use-cases/message/create";
+import { getMessages } from "../../../application/use-cases/message/get";
+import {  messageSend } from "../../../application/use-cases/message/create";
+import { messageDelete, messageDeleteEveryOne } from "../../../application/use-cases/message/edit";
 
 export const messageController = (
   messageRepoimpl: messageRepositoryMongoDBType,
@@ -45,37 +46,39 @@ export const messageController = (
           });
   });
 
+  const deleteForEveryOneMessage = expressAsyncHandler(async (req: Request, res: Response) => {
+  
+    const { messageId} = req.body;
 
-  const getAllUnreadMessages=expressAsyncHandler(async(req:Request,res:Response)=>{
-    const {userId}=req.body
-   const messages= await handleGetAllUnreadMessages(userId,repository)
-    res.status(200).json({
-        status:'success',
-        messages
-    })
-})
-const getUnreadMessagesFromChat = expressAsyncHandler(async (req: Request, res: Response) => {
-  const { chatId,userId } = req.body
-  const messages = await handleGetUnreadMessagesFromChat(
-      chatId,
-      userId,
-      repository
-  )
+        const data=await messageDeleteEveryOne(messageId,repository)
 
-  res.status(200).json({
-      status: "success",
-      data:messages
+        res.status(HttpStatus.OK).json({
+            status: "success",
+            message: "message posted",
+            data
+          });
   });
-})
+  const deleteForMeMessage = expressAsyncHandler(async (req: Request, res: Response) => {
+  
+    const { userId,messageId} = req.body;
 
-const setUnreadMessagesRead=expressAsyncHandler(async(req:Request,res:Response)=>{
-  const {chatId,userId}=req.body
-  await handleSetUnreadMessagesRead(chatId,userId,repository)
-  res.status(200).json({
-      status:"success",
-      message:'set unread messages read successfully'
-  })
-})
+        const data=await messageDelete(messageId,userId,repository)
+
+        res.status(HttpStatus.OK).json({
+            status: "success",
+            message: "message posted",
+            data
+          });
+  });
+
+
+
+
+  
+
+
+
+
 
 
 
@@ -84,9 +87,9 @@ const setUnreadMessagesRead=expressAsyncHandler(async(req:Request,res:Response)=
   return {
     allMesaages,
     sendMessage,
-    setUnreadMessagesRead,
-    getUnreadMessagesFromChat,
-    getAllUnreadMessages
+    deleteForEveryOneMessage,
+    deleteForMeMessage
+   
   };
 };
 

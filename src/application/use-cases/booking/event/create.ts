@@ -1,8 +1,8 @@
-
 import { bookingInterface } from "../../../../entities/bookingInterface";
 import { CreateLocationInterface } from "../../../../entities/locationInterface";
 import { bookingRepositoryMongoDBType } from "../../../../framework/database/mongodb/repositories/bookingRepositoryMongoDB";
 import { locationRepositoryMongoDBType } from "../../../../framework/database/mongodb/repositories/locationRepositoryMongoDB";
+import { NotificationRepositoryMongoDbType } from "../../../../framework/database/mongodb/repositories/notificationRepositoryMongoDB ";
 import { UserRepositoryMongoDBType } from "../../../../framework/database/mongodb/repositories/userRepositoryMongoDB";
 import { venderRepositoryMongoDBType } from "../../../../framework/database/mongodb/repositories/venterRepositoryMongoDB";
 import { HttpStatus } from "../../../../types/httpStatus";
@@ -104,7 +104,6 @@ export const bookEvent = async (
 
 export const payment = async (
   bookingData: bookingInterface,
-  bookingrepository: ReturnType<bookingRepositoryMongoDBType>
 ) => {
   try {
     const options = {
@@ -138,7 +137,8 @@ export const capturepayment = async (
   paymentId: string,
   amountData: number,
   bookingrepository: ReturnType<bookingRepositoryMongoDBType>,
-  userrepository: ReturnType<UserRepositoryMongoDBType>
+  userrepository: ReturnType<UserRepositoryMongoDBType>,
+  notificationrepository: ReturnType<NotificationRepositoryMongoDbType>,
 ) => {
   try {
     const amount = amountData;
@@ -157,10 +157,23 @@ export const capturepayment = async (
       }
     );
 
+
     let service: any | null = [];
     if (response.status == 200) {
       bookingData = { ...bookingData, status: "booked" };
       const result = await bookingrepository.createBookingDb(bookingData);
+
+
+      const notificationData={
+        receiverId:bookingData.manager,
+        senderId:bookingData.user,
+        event:bookingData.status,
+        booking:result._id
+      }
+  
+      
+      const notification = await notificationrepository.createNotification(notificationData);
+
 
       const managerData = await userrepository.getUserById(bookingData.manager);
       const userData = await userrepository.getUserById(bookingData.user);
@@ -177,11 +190,3 @@ export const capturepayment = async (
     throw new AppError("Something Went Wrong", HttpStatus.NOT_ACCEPTABLE);
   }
 };
-
-
-
-
-
-
-
-

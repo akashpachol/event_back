@@ -6,7 +6,6 @@ import { notficationRepositoryMongoDb } from "../../database/mongodb/repositorie
 export const notificationRouter = () => {
   const router = express.Router();
   const controller = notificationController(notficationRepositoryMongoDb);
-    router.get('/getNotifications',controller.getNotifications)
-    router.patch('/readNotifications',controller.readNotifications)
+    router.get('/getNotifications/:userId',controller.getNotifications)
   return router;
 };

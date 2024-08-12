@@ -16,15 +16,5 @@ export const handleGetNotifications=async(
     }
 }
 
-export const handleReadNotification=async(
-    userId:string,
-    notificationDbRepository:ReturnType<NotificationRepositoryMongoDbType>
-)=>{
-    try {
-        await notificationDbRepository.readNotifications(userId)
-    } catch (error) {
-        console.log('error in handling read notification',error)
-        throw new AppError('Error in handling read notification',HttpStatus.INTERNAL_SERVER_ERROR)
-    }
-}
+
 

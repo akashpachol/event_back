@@ -13,11 +13,15 @@ export const getMessages = async (
       HttpStatus.BAD_REQUEST
     );
   }
-
+        const updateMessage=await repository.updateMessagedb(chatId,userId)
   const messsage = await repository.messageGet(userId, chatId);
 
   return messsage;
 };
+
+
+
+
 
 export const handleGetUnreadMessagesFromChat = async (
   chatId: string,

@@ -1,71 +1,63 @@
 import mongoose from "mongoose";
 import Notification from "../models/notification";
+import User from "../models/user";
+import { CreateUserInterface } from "../../../../entities/userinterfaces";
 const { ObjectId } = mongoose.Types
 
 
 export const notficationRepositoryMongoDb = () => {
 
-    const createNotification = async ({ senderId, receiverId, event, postId }: { receiverId: string, senderId: string, event: string, postId?: string }) => {
+    const createNotification = async (notificationData:any) => {
         try {
-            const notification = new Notification({
-                senderId,
-                receiverId,
-                event,
-                postId: postId 
-            });
-
-            await notification.save();
-
-            return await Notification.findById(notification._id)
-                .populate('postId', 'image')
-                .populate('senderId');
-        } catch (error) {
-            console.log(error);
-        }
-    }
-
-    const deleteNotification = async ({ senderId, receiverId, event, postId }: { receiverId: string, senderId: string, event: string, postId?: string }) => {
-        try {
-            const query: any = {
-                senderId: new ObjectId(senderId),
-                receiverId: new ObjectId(receiverId),
-                event
-            };
-    
-            if (postId) {
-                query.postId = new ObjectId(postId);
-            }
-    
-            const result = await Notification.findOneAndDelete(query);
+            console.log(notificationData,'notificationData');
             
-            return result;
+            const notification = new Notification(
+                notificationData
+            );
+
+        return  await notification.save();
+
+   
         } catch (error) {
             console.log(error);
         }
     }
+
+   
+
+
 
     const getNotifications = async (receiverId:string) => {
         try {
-            const notifications = await Notification.find({ receiverId}).sort({ createdAt: -1 }).populate('senderId').populate('postId','image')
+
+            const populateField = await determinePopulateField(receiverId);
+            const notifications = await Notification.find({ receiverId}).sort({ createdAt: -1 }).populate('senderId').populate(populateField)
+            // await Notification.updateMany({receiverId}, { isSeen: true });
             return notifications
         } catch (error) {
             console.log(error)
         }
     }
 
-    const readNotifications = async (userId: string) => {
-        try {
-            await Notification.updateMany({receiverId:userId}, { isSeen: true });
-        } catch (error) {
-            console.log(error)
-        }
+
+
+const determinePopulateField = async (receiverId: string): Promise<string> => {
+
+    const userData: CreateUserInterface = await User.findById(receiverId) as CreateUserInterface
+ 
+    if ( userData.role='vender') {  
+      return 'bookingVender';
+    } else {
+      return 'booking';
     }
+  };
+
+
 
     return {
         getNotifications,
-        readNotifications,
+
         createNotification,
-        deleteNotification
     }
 }
 

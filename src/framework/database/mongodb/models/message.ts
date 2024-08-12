@@ -30,11 +30,6 @@ const messageSchema: Schema<MessageDocument> = new Schema(
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
       },
-    
-    isSeen: {
-      type: Boolean,
-      default: false,
-    },
     isDeleted: {
       type: Boolean,
       default: false,
