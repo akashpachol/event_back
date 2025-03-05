@@ -101,6 +101,11 @@ export const venderRepositoryMongoDB = () => {
       .populate<{ type: VenderTypeDocument }>("type")
       .populate<{ vender: UserDocument }>("vender");
 
+
+      const getVenderDetailsDb = async (vender: string) => {
+        return await Vender.findById(vender);
+      };
+
   return {
     createVenderTypeDb,
     createVenderDb,
@@ -115,6 +120,7 @@ export const venderRepositoryMongoDB = () => {
     updateVenderTypedb,
     filterVendersDb,
     getVenderById,
+    getVenderDetailsDb
   };
 };
 

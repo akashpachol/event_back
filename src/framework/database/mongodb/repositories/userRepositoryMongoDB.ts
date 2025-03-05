@@ -4,6 +4,8 @@ import { UserEntityType } from "../../../../entities/user";
 import bcrypt from "bcrypt";
 import { sendPassword } from "../../../../utils/mailler";
 import mongoose from "mongoose";
+import Location from "../models/location";
+import Booking from "../models/booking";
 
 export const userRepositoryMongoDB = () => {
   const getUserByEmail = async (email: string, role: string) => {
@@ -75,7 +77,9 @@ export const userRepositoryMongoDB = () => {
   const getAllPerson = async (role: string,userId:string) => {
     return await User.find({ role: { $ne: role } ,_id:{$ne:userId}});
   };
-  
+  const getAllManager = async () => {
+    return await User.find({ role:'manager'});
+  };
 
   const updateUserByProperty = async (id: string, updates: any) => {
     const user: CreateUserInterface | null = await User.findByIdAndUpdate(
@@ -132,6 +136,92 @@ export const userRepositoryMongoDB = () => {
         throw new Error("Unable to search users");
       }
     };
+
+    interface locationQuery {
+      $or?: {
+        state?: { $regex: string; $options: string };
+     
+      }[];
+      verify: boolean;
+    }
+
+    const searchLocationValue = async (data: string | undefined) => {
+      const query: locationQuery = { verify: true};
+    
+      if (data) {
+        query.$or = [
+          { state: { $regex: data, $options: "i" } },
+        
+        ];
+      }else{
+        const users = await Location.find({verify:true}).exec(); 
+        console.log(users,'location');
+        return users;
+      }
+    
+      try {
+        const users = await Location.find(query).exec(); 
+        console.log(users,'location');
+        return users;
+      } catch (error) {
+        console.error("Error in searching users", error);
+        throw new Error("Unable to search users");
+      }
+    };
+
+    const getAllData = async () => {
+      let data:{user:number,manager:number,vender:number,hotels:number,sales:number,booking:number}={user:0,manager:0,vender:0,hotels:0,sales:0,booking:0}
+
+      data.user = await User.countDocuments({ role: 'user' });
+      data.manager = await User.countDocuments({ role: 'manager' });
+      data.vender = await User.countDocuments({ role: 'vender' });
+      data.hotels = await Location.countDocuments();
+      data.booking = await Booking.countDocuments();
+    const result= await Booking.aggregate([
+        {
+          $group: {
+            _id: null,
+            totalSum: { $sum: "$total" }
+          }
+        }
+      ])
+      data.sales =result.length > 0?result[0].totalSum:0
+      return data
+    };
+
+  
+const getAllRoleData = async (id: string) => {
+  try {
+    let data: { hotels: number; sales: number; booking: number } = {
+      hotels: 0,
+      sales: 0,
+      booking: 0,
+    };
+
+    let roleId = new mongoose.Types.ObjectId(id);
+
+    data.hotels = await Location.countDocuments({ manager: roleId });
+
+    data.booking = await Booking.countDocuments({ manager: roleId });
+
+    const result = await Booking.aggregate([
+      { $match: { manager: roleId } },
+      {
+        $group: {
+          _id: null,
+          totalSum: { $sum: "$total" },
+        },
+      },
+    ]);
+
+    data.sales = result.length > 0 ? result[0].totalSum : 0;
+
+    return data;
+  } catch (error) {
+    console.error('Error fetching role data:', error);
+    throw new Error('Could not retrieve role data');
+  }
+};
     
 
   return {
@@ -144,7 +234,11 @@ export const userRepositoryMongoDB = () => {
     getAllUsers,
     searchValue,
     getManger,
-    getAllPerson
+    getAllPerson,
+    searchLocationValue,
+    getAllManager,
+    getAllData,
+    getAllRoleData
   };
 };
 

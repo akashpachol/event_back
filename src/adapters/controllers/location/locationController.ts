@@ -4,7 +4,7 @@ import expressAsyncHandler from "express-async-handler";
 import { HttpStatus } from "../../../types/httpStatus";
 import { locationRepositoryMongoDBType } from "../../../framework/database/mongodb/repositories/locationRepositoryMongoDB";
 import { LocationInterface } from "../../../entities/locationInterface";
-import { locationAdd } from "../../../application/use-cases/location/create";
+import { Filteredlocation, locationAdd } from "../../../application/use-cases/location/create";
 import { LocationDetails, LocationWithIdGet, verifyLocationGet } from "../../../application/use-cases/location/get";
 import { locationEdit, verifyLocation } from "../../../application/use-cases/location/edit";
 
@@ -85,6 +85,18 @@ const location=req.body
     }
   );
 
+  const getFilteredlocation = expressAsyncHandler(
+    async (req: Request, res: Response) => {
+      const {data}=req.body
+      const locationData = await Filteredlocation(data,repository);
+
+      res.status(HttpStatus.OK).json({
+        status: "success",
+        message: "All users details has been fetched",
+        data:locationData,
+      });
+    }
+  );
 
 
 
@@ -95,6 +107,7 @@ const location=req.body
     LocationVerify,
     editLocation,
     getLocationDetails,
-    getVerifyLocation
+    getVerifyLocation,
+    getFilteredlocation
   };
 };

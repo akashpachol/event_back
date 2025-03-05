@@ -14,6 +14,7 @@ export const  locationRouter=()=>{
     router.post('/verfyLocation', controller.LocationVerify);
     router.put('/editLocation', controller.editLocation);
     router.get('/getVerifyLocation',controller.getVerifyLocation)
+    router.post('/getFilteredlocation',controller.getFilteredlocation)
 
     return router
 }

@@ -72,3 +72,25 @@ export const getMangerBookingHistory = async (
     throw new AppError("Something Went Wrong", HttpStatus.NOT_ACCEPTABLE);
   }
 };
+
+
+
+export const venderBookingDetails = async (
+  venderId: string,
+  bookingrepository: ReturnType<bookingRepositoryMongoDBType>
+) => {
+  try {
+    if (!venderId) {
+      throw new AppError(
+        "Please fill all the fields",
+        HttpStatus.NOT_ACCEPTABLE
+      );
+    }
+
+    const booking = await bookingrepository.getVenderBooking(venderId);
+
+    return { booking };
+  } catch (err) {
+    throw new AppError("Something Went Wrong", HttpStatus.NOT_ACCEPTABLE);
+  }
+};

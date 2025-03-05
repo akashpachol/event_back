@@ -74,5 +74,39 @@ export const bookingRouter = () => {
     controller.getMangerbookingDetails
   );
 
+  router.get(
+    "/getLocationBooking/:locationId",
+    jwtTokenVerification,
+    controller.getLocationBooking
+  );
+
+  router.get(
+    "/getVenderBooking/:venderId",
+    jwtTokenVerification,
+    controller.getVenderBooking
+  );
+
+  
+  router.get(
+    "/checkVenderAvailability/:date",
+    jwtTokenVerification,
+    controller.checkVenderAvailability
+  );
+  router.get(
+    "/bookingCount/:year",
+    jwtTokenVerification,
+    controller.bookingCount
+  );
+  router.get(
+    "/ManagerbookingCount",
+    jwtTokenVerification,
+    controller.ManagerbookingCount
+  );
+  router.get(
+    "/eventBooking",
+    jwtTokenVerification,
+    controller.eventBooking
+  );
+
   return router;
 };

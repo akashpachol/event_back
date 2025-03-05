@@ -9,7 +9,6 @@ const socketConfig = (io: Server) => {
     const userId = socket.handshake.query.userId as string;
     if (userId != "undefined") userSocketMap[userId] = socket.id;
 
-    // io.emit() is used to send events to all the connected clients
     socket.emit("getOnlineUsers", Object.keys(userSocketMap));
 
     socket.on("join chat", (room) => {
@@ -37,108 +36,41 @@ const socketConfig = (io: Server) => {
     });
 
 
-	socket.on("notification", (id) => {
-		console.log(id,'hkglhlg');
-		
-		socket.to(userSocketMap[id]).emit("responseNotification",id);
+	socket.on("notification", (data) => {
+		console.log('hello',data);
+  
+
+		socket.to(userSocketMap[data]).emit("responseNotification",data);
 	  });
 
 
-
-    const offers:any = [
-
-];
-
-
-
-
-    socket.on("newOffer", (newOffer,id,reciver) => {
-  
-      offers.push({
-        offerUserId: id,
-        offer: newOffer,
-        offerIceCandidates: [],
-        answererUserName: null,
-        answer: null,
-        answererIceCandidates: [],
-      });
-
-        socket.to(userSocketMap[reciver._id]).emit("availableOffers", offers);
-
+    socket.on("videoCallRequest", (data: any) => {
+      const emitdata = {
+        roomId: data.roomId,
+        senderName:data.senderName,
+        senderProfile:data.senderProfile
+      };
+      console.log("videoCallResponse",emitdata)
+      console.log("receiverid", data);
+   
+    console.log(userSocketMap[data.receiverId],'kkkkkkkkkkkkks');
+    
+   
+      socket.to(userSocketMap[data.receiverId]).emit("videoCallResponse", emitdata);
+      
     });
 
-    console.log(offers,'kkkkkkkkkkkkkkkk');
+      socket.on('cancel-call', ({ receiverId }) => {
+    io.to(userSocketMap[receiverId]).emit('call-cancelled');
+  });
+
+
+
+
+
+
  
-socket.on("sendIceCandidateToSignalingServer", (iceCandidateObj,id) => {
-    const { didIOffer, iceUserId, iceCandidate } = iceCandidateObj;
-    console.log('gjhgjfkgfkgj',offers);
-    
-  
-   
-    
-    if (didIOffer) {
-      
-      const offerInOffers = offers.find(
-        (o:any) => o.offerUserId === iceUserId
-      );
 
-      if (offerInOffers) {
-        offerInOffers.offerIceCandidates.push(iceCandidate);
-
-        if (offerInOffers.answererUserName && offerInOffers.answererUserName==iceUserId) {
-            socket
-              .to(id)
-              .emit("receivedIceCandidateFromServer", iceCandidate);
-        }
-      }
-    } else {
-
-      const offerInOffers = offers.find(
-        (o:any) => o.answererUserName === iceUserId
-      );
-   
-      if (offerInOffers.offerUserId==iceUserId) {
-        socket
-          .to(id)
-          .emit("receivedIceCandidateFromServer", iceCandidate);
-      }
-    }
-  });
-
-
-   socket.on("newAnswer", (offerObj,id, ackFunction) => {
-
-
-
-    const socketToAnswer:string|undefined = Object.keys(userSocketMap).find(
-      (s) => s === offerObj.offerUserId
-    );
-
-
-    if (!socketToAnswer) {
-      console.log("No matching socket");
-      return;
-    }
-
-    const socketIdToAnswer =userSocketMap[socketToAnswer];
-
-    const offerToUpdate = offers.find(
-      (o:any) => o.offerUserId === offerObj.offerUserId
-    );
-    console.log(offers,'damonnneee','jjjjj',offerToUpdate);
-
-    if (!offerToUpdate) {
-      return;
-    }
-console.log(offerToUpdate.offerIceCandidates,'hgdfdjgh');
-
-    ackFunction(offerToUpdate.offerIceCandidates);
-    offerToUpdate.answer = offerObj.answer;
-    offerToUpdate.answererUserId=id;
-    console.log(offerToUpdate,'offerToUpdatxzzzzzzzzzzzzzzzzzze');
-
-    socket.to(socketIdToAnswer).emit("answerResponse", offerToUpdate);
-  });
 
 
     socket.on("disconnect", () => {

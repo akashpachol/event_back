@@ -7,5 +7,6 @@ export const notificationRouter = () => {
   const router = express.Router();
   const controller = notificationController(notficationRepositoryMongoDb);
     router.get('/getNotifications/:userId',controller.getNotifications)
+    router.get('/getUnreadNotification/:userId',controller.getUnreadNotification)
   return router;
 };

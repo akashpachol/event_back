@@ -10,6 +10,7 @@ import {
 } from "../../../application/use-cases/vender/create";
 import { HttpStatus } from "../../../types/httpStatus";
 import {
+  venderDetailsGet,
   venderFilter,
   VenderTypeGet,
   VenderWithIdGet,
@@ -185,6 +186,25 @@ export const venderController = (
     }
   );
 
+
+  const getVenderDetails = expressAsyncHandler(
+    async (req: Request, res: Response) => {
+      const venderId: string = req.params.venderId;
+
+      const data = await venderDetailsGet(
+        venderId,
+        repository,
+      
+      );
+
+      res.status(HttpStatus.OK).json({
+        status: "success",
+        message: "get all venders",
+        data,
+      });
+    }
+  );
+
   return {
     EditVender,
     EditVenderType,
@@ -197,5 +217,6 @@ export const venderController = (
     getVerifyVender,
     filterVender,
     getVerifyVenderWithId,
+    getVenderDetails
   };
 };

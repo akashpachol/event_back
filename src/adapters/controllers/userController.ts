@@ -5,6 +5,7 @@ import { UserRepositoryMongoDBType } from "../../framework/database/mongodb/repo
 import { HttpStatus } from "../../types/httpStatus";
 import {
   getSerachData,
+  getSerachLocationData,
   getUserProfile,
   
   managerGet,
@@ -84,6 +85,22 @@ const userController = (
   });
 
 
+  
+
+  const getSearchLocation = asyncHandler(async (req: Request, res: Response) => {
+    const data= req.query.data as string
+    console.log(data,'kkkkkk');
+    
+     const locationData = await getSerachLocationData(data,dbRepositoryUser);
+ 
+ 
+     res.status(HttpStatus.OK).json({
+       status: "success",
+       message: "All users details has been fetched",
+       data:locationData
+     });
+   });
+
 
 
 
@@ -121,7 +138,7 @@ console.log(role,id);
     handleGetUserProfile,
     handleUpdateUserProfile,
     handleUpdateProfileImage,
-
+    getSearchLocation,
     getWallet,
     allUsers,
     getManger

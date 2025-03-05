@@ -2,7 +2,7 @@ import {  Request, Response } from "express"
 import asyncHandler from "express-async-handler";
 import { UserRepositoryMongoDBType } from "../../../framework/database/mongodb/repositories/userRepositoryMongoDB";
 import { HttpStatus } from "../../../types/httpStatus";
-import { blockuser,getAllUsers } from "../../../application/use-cases/user/userDetails";
+import { allDataGet, blockuser,getAllUsers } from "../../../application/use-cases/user/userDetails";
 export default function adminController(
     userDbRepositoryImpl: UserRepositoryMongoDBType,
   ) {
@@ -56,10 +56,24 @@ export default function adminController(
         });
       }
     );
+
+    const getAllData = asyncHandler(
+      async (req: Request, res: Response) => {
+  
+        const { data } = await allDataGet( userRespository);
+  
+        res.status(HttpStatus.OK).json({
+          status: "success",
+          message: "get Booking Details",
+          data
+        });
+      }
+    );
     return {
       handleGetAllVender,
         handleGetAllUsers,
         handleBlockUsers,
-        handleGetAllManger
+        handleGetAllManger,
+        getAllData
       };
   }

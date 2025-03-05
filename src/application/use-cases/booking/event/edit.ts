@@ -55,6 +55,7 @@ export const cancelBooking = async (
       let totalAmount = booking?.total;
 
       const walletData = await walletrepository.getWalletDb(user_id);
+      console.log(totalAmount,'ghghghghgh',walletData);
 
       if (walletData) {
         const createdWallet = await walletrepository.updatewalletBalancedb(
@@ -83,7 +84,11 @@ export const cancelBooking = async (
       }
       const notification = await notificationrepository.createNotification(notificationData);
 
-      cancelService(reason, bookingId, bookingrepository, walletrepository,notificationrepository);
+      let bookedService=booking.service.filter((value)=>value.status=='booked')
+      if(bookedService.length>0){
+        cancelService(reason, bookingId, bookingrepository, walletrepository,notificationrepository);
+
+      }
     }
   } catch (err) {
     throw new AppError("Something Went Wrong", HttpStatus.NOT_ACCEPTABLE);
@@ -99,6 +104,7 @@ export const cancelService = async (
 
 ) => {
   try {
+    
     if (!reason || !bookingId) {
       throw new AppError(
         "Please fill all the fields",

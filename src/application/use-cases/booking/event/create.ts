@@ -16,7 +16,8 @@ var instance = new Razorpay({
 export const bookEvent = async (
   booking: bookingInterface,
   locationrepository: ReturnType<locationRepositoryMongoDBType>,
-  venderrepository: ReturnType<venderRepositoryMongoDBType>
+  venderrepository: ReturnType<venderRepositoryMongoDBType>,
+  bookingrepository:ReturnType<bookingRepositoryMongoDBType>,
 ) => {
   const {
     name,
@@ -39,6 +40,27 @@ export const bookEvent = async (
   if (!location) {
     throw new AppError("Location not found", HttpStatus.NOT_FOUND);
   }
+
+
+const bookingVender = await bookingrepository.getVenderAvailabilityCheck(date);
+
+
+let selected=bookingVender.map((service)=>{
+ return  service.service.map(item => item.data.toString())
+})
+console.log(selected.flat(),'ggjhgjgjgj',selected);
+
+console.log(service);
+
+
+let filteredArray = service.filter((item:any) =>
+  selected.flat().includes(item.data)
+);
+if(filteredArray.length>0){
+  throw new AppError("Service not Available", HttpStatus.NOT_FOUND);
+
+}
+console.log(filteredArray,'filteredArray');
 
   const data: CreateLocationInterface = {
     _id: location._id,
@@ -77,6 +99,8 @@ export const bookEvent = async (
       }
     });
   }
+
+
 
   let bookingData: bookingInterface = {
     user: user,

@@ -6,10 +6,11 @@ export const walletRepositoryMongoDB = () => {
     const wallet = new Wallet({
         user,
         transactions:[{type:"credit",amount:amount?amount*(75/100):0}],
-        walletBalance:  amount?amount*(75/100):0
+        walletBalance:amount?amount*(75/100):0
     });
 
    const walletData= await wallet.save();
+console.log(walletData,'hjhjhjh');
 
     return walletData;
   };
@@ -26,6 +27,7 @@ export const walletRepositoryMongoDB = () => {
       if (!walletData) {
         throw new Error(`Wallet data not found for user with id: ${id}`);
       }
+  console.log(walletData.walletBalance,'balal');
   
       walletData.walletBalance += totalAmount * (75 / 100);
   

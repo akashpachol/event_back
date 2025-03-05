@@ -20,6 +20,6 @@ export default function adminRoute() {
   router.route("/vender").get(controller.handleGetAllVender);
 
   router.post("/userblock", controller.handleBlockUsers);
-
+  router.route("/getAllData").get(controller.getAllData);
   return router;
 }

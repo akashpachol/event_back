@@ -2,6 +2,7 @@ import express from "express";
 import { venderController } from "../../../adapters/controllers/vender/venderController";
 import { venderRepositoryMongoDB } from "../../database/mongodb/repositories/venterRepositoryMongoDB";
 import { userRepositoryMongoDB } from "../../database/mongodb/repositories/userRepositoryMongoDB";
+import jwtTokenVerification from "../middleware/jwtTokenVerification";
 
 export const venderRouter = () => {
   const router = express.Router();
@@ -23,5 +24,10 @@ export const venderRouter = () => {
   router.post('/filterVender', controller.filterVender);
   router.get('/getVerifyVender',controller.getVerifyVender)
   router.get('/EditVender',controller.EditVender)
+  router.get(
+    "/getVenderDetails/:venderId",
+    jwtTokenVerification,
+    controller.getVenderDetails
+  );
   return router;
 };

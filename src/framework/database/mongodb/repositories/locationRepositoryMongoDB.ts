@@ -90,7 +90,32 @@ export const locationRepositoryMongoDB = () => {
       return discountedPrice;
     }
 
-  
+    const getFilterLocationbyIdDb = async (data: any) => {
+      console.log(data, 'ffjfjfjfj', data.count.length);
+    
+      let location;
+      const query: any = {};
+      query.verify=true
+      if (data.count.length > 0) {
+        const minCount = Math.max(...data.count);
+        query.capasity = { $lte: minCount };
+      }
+    
+      if (data.price.length > 0 &&data.price[1]>0 ) {
+        query.price = { $gte: data.price[0], $lte: data.price[1] };
+      }
+    
+      if (Object.keys(query).length > 0) {
+        location = await Location.find(query);
+        console.log( query.count, 'ggggg');
+
+      } else {
+        location = await Location.find({verify:true});
+      }
+    
+      return location;
+    };
+    
   return {
     createLocationDb,
     getLocationbyManagerIdDb,
@@ -98,7 +123,8 @@ export const locationRepositoryMongoDB = () => {
     getLocationByIdValueDb,
     getAllVerifyLocationDb,
     getLocationbyIdDb,
-    addOfferToLocation
+    addOfferToLocation,
+    getFilterLocationbyIdDb
   };
 };
 

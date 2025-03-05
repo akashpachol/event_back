@@ -13,10 +13,10 @@ import { UserRepositoryMongoDBType } from "../../../framework/database/mongodb/r
 import { walletRepositoryMongoDBType } from "../../../framework/database/mongodb/repositories/walletRepositoryMongoDB";
 
 import { bookEvent, capturepayment, payment } from "../../../application/use-cases/booking/event/create";
-import { getBookingDetail, getBookingHistory } from "../../../application/use-cases/booking/event/get";
+import { bookingEvent, checkBookingCount, checkManagerbookingCount, getBookingDetail, getBookingHistory, locationBookingDetails, VenderAvailabilityCheck } from "../../../application/use-cases/booking/event/get";
 import { cancelBooking, checkStatus } from "../../../application/use-cases/booking/event/edit";
 import { bookVenderService, venderCapturepayment } from "../../../application/use-cases/booking/vender/create";
-import { getMangerBookingDetail, getMangerBookingHistory, getVenderBookingHistory } from "../../../application/use-cases/booking/vender/get";
+import { getMangerBookingDetail, getMangerBookingHistory, getVenderBookingHistory, venderBookingDetails } from "../../../application/use-cases/booking/vender/get";
 import { NotificationRepositoryMongoDbType } from "../../../framework/database/mongodb/repositories/notificationRepositoryMongoDB ";
 
 export const bookingController = (
@@ -43,7 +43,7 @@ export const bookingController = (
       const data = await bookEvent(
         booking,
         locationrepository,
-        venderrepository
+        venderrepository,bookingrepository
       );
       bookingData = data;
 
@@ -246,6 +246,94 @@ export const bookingController = (
     }
   );
 
+  const getLocationBooking = expressAsyncHandler(
+    async (req: Request, res: Response) => {
+      const { locationId } = req.params;
+
+      const { booking } = await locationBookingDetails(locationId, bookingrepository);
+
+      res.status(HttpStatus.OK).json({
+        status: "success",
+        message: "get Booking Details",
+        data: booking,
+      });
+    }
+  );
+  const getVenderBooking = expressAsyncHandler(
+    async (req: Request, res: Response) => {
+      const { venderId } = req.params;
+
+      const { booking } = await venderBookingDetails(venderId, bookingrepository);
+
+      res.status(HttpStatus.OK).json({
+        status: "success",
+        message: "get Booking Details",
+        data: booking,
+      });
+    }
+  );
+
+
+  const checkVenderAvailability = expressAsyncHandler(
+    async (req: Request, res: Response) => {
+      const { date } = req.params;
+
+      const { booking } = await VenderAvailabilityCheck(date, bookingrepository);
+
+      res.status(HttpStatus.OK).json({
+        status: "success",
+        message: "get Booking Details",
+        data: booking,
+      });
+    }
+  );
+
+  const bookingCount = expressAsyncHandler(
+    async (req: Request, res: Response) => {
+      let { year } = req.params;
+const yearValue=Number(year)
+      const { booking } = await checkBookingCount(yearValue, bookingrepository);
+
+      res.status(HttpStatus.OK).json({
+        status: "success",
+        message: "get Booking Details",
+        data: booking,
+      });
+    }
+  );
+
+  const ManagerbookingCount = expressAsyncHandler(
+    async (req: Request, res: Response) => {
+      const id=req.query.id as string
+
+      const year=req.query.year as string
+const yearValue=Number(year)
+      const { booking } = await checkManagerbookingCount(yearValue,id, bookingrepository);
+
+      res.status(HttpStatus.OK).json({
+        status: "success",
+        message: "get Booking Details",
+        data: booking,
+      });
+    }
+  );
+  const eventBooking = expressAsyncHandler(
+    async (req: Request, res: Response) => {
+      const id=req.query.id as string
+
+
+
+      const { booking } = await bookingEvent(id, bookingrepository);
+
+      res.status(HttpStatus.OK).json({
+        status: "success",
+        message: "get Booking Details",
+        data: booking,
+      });
+    }
+  );
+
+
   return {
     bookLocation,
     paymentBooking,
@@ -258,6 +346,12 @@ export const bookingController = (
     venderPaymentcapture,
     bookingVenderHistory,
     getMangerBooking,
-    getMangerbookingDetails
+    getMangerbookingDetails,
+    getLocationBooking,
+    getVenderBooking,
+    checkVenderAvailability,
+    bookingCount,
+    ManagerbookingCount,
+    eventBooking
   };
 };

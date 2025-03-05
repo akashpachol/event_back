@@ -65,3 +65,21 @@ export const VenderWithIdGet = async (
     throw new AppError("Somthing went wrong ", HttpStatus.UNAUTHORIZED);
   }
 };
+
+
+export const venderDetailsGet = async (
+  venderId: string,
+  repository: ReturnType<venderRepositoryMongoDBType>,
+) => {
+  if (!venderId) {
+    throw new AppError("Somthing went wrong ", HttpStatus.UNAUTHORIZED);
+  }
+
+
+
+    const data = repository.getVenderDetailsDb(venderId);
+
+    return data;
+
+};
+

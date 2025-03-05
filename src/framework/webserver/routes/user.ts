@@ -28,7 +28,7 @@ const userRouter = () =>{
     router.get('/getWallet/:userId',jwtTokenVerification, controller.getWallet);
     router.get('/searchData',jwtTokenVerification, controller.allUsers);
     router.get('/manager',jwtTokenVerification, controller.getManger);
-
+    router.get('/searchLocationData', controller.getSearchLocation);
     return router
 }
 

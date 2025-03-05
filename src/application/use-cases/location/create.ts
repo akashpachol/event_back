@@ -40,6 +40,22 @@ export const locationAdd = async (
 
 
 
+export const Filteredlocation = async (
+  locationData:any,
+  repository: ReturnType<locationRepositoryMongoDBType>
+) => {
+  if (!locationData) {
+    throw new AppError("Please fill all the fields", HttpStatus.NOT_ACCEPTABLE);
+  }
+
+  const data = repository.getFilterLocationbyIdDb(locationData);
+
+  return data;
+};
+
+
+
+
 
 
 

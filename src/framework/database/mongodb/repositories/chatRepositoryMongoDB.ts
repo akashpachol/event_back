@@ -74,7 +74,7 @@ console.log(userObjectId);
         .populate("users", "-password -refreshToken -refreshTokenExpiresAt")
         .populate("messages")
         .sort({ updatedAt: -1 });
-        console.log(chats);
+    
 
       return chats;
     } catch (error) {

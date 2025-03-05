@@ -20,7 +20,7 @@ export interface bookingInterface  {
   
   export interface createbookingInterface {
     _id?: Types.ObjectId |undefined,
-    manager:Types.ObjectId;
+    manager:Types.ObjectId|CreateUserInterface;
     locationData:Types.ObjectId;
     name: string;
     event:string;

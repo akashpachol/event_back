@@ -15,6 +15,18 @@ export const handleGetNotifications=async(
         throw new AppError('Error in fetching notification',HttpStatus.INTERNAL_SERVER_ERROR)
     }
 }
-
+export const handleUnreadGetNotifications=async(
+    userId:string,
+    notificationDbRepository:ReturnType<NotificationRepositoryMongoDbType>
+)=>{
+    try {
+        const notifications=await notificationDbRepository.getUreadNotifications(userId)
+        
+        return notifications
+    } catch (error) {
+        console.log('error in fetching notifications',error)
+        throw new AppError('Error in fetching notification',HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+}
 
 
